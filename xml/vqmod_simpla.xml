@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>VQMOD CORE FOR SIMPLACMS - DO NOT REMOVE</id>
+    <version>1.1</version>
+    <vqmver required="true">2.6.0</vqmver>
+    <author>Polevik Yurii</author>
+
+	<file name="api/*.php">
+		<operation error="skip" info="Remove include Simpla.php">
+            <search position="replace"><![CDATA[require_once('Simpla.php');]]></search>
+            <add><![CDATA[]]></add>
+        </operation>
+	</file>
+	
+	<file name="api/Config.php">
+		<operation error="skip" info="Change config path">
+            <search position="replace"><![CDATA[dirname(dirname(__FILE__))]]></search>
+            <add><![CDATA[dirname(dirname(dirname(__FILE__)))]]></add>
+        </operation>
+	</file>
+		
+	<file name="api/Managers.php">
+		<operation error="skip" info="Change path">
+            <search position="after" offset="2"><![CDATA[public function __construct()]]></search>
+            <add><![CDATA[
+				$this->passwd_file = $this->config->root_dir.$this->passwd_file;
+			]]></add>           
+        </operation>
+		
+		<operation error="skip" info="Set config path">
+			<search position="replace"><![CDATA[dirname(dirname(__FILE__)).'/'.]]></search>
+            <add><![CDATA[]]></add>
+        </operation>
+	</file>
+	
+	
+	<file name="api/Design.php">
+		<operation error="skip" info="Replace pathes to inlude smarty and Simpla.php">
+            <search position="replace" offset="1"><![CDATA[require_once(dirname(__FILE__).'/'.'Simpla.php');]]></search>
+            <add><![CDATA[
+			
+require_once('./api/Simpla.php');
+require_once('./Smarty/libs/Smarty.class.php');
+
+class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File  {
+	/*
+		Catch smarty tpl files
+	*/
+
+    protected function buildFilepath(Smarty_Template_Source $source, Smarty_Internal_Template $_template=null)
+    {
+		$filepath = parent::buildFilepath($source, $_template);
+        return VQMod::modCheck($filepath);
+    }
+
+}
+			]]></add>
+        </operation>
+		
+		<operation error="skip" info="Add smarty resource">
+            <search position="after"><![CDATA[$this->smarty = new Smarty();]]></search>
+            <add><![CDATA[
+		$this->smarty->registerResource('simpla', new Simpla_Smarty_Resource());
+		$this->smarty->default_resource_type = 'simpla';
+			]]></add>
+        </operation>
+	</file>	
+	
+	<file name="view/IndexView.php">
+		<operation error="skip" info="Replace simplacms includes/requires for catalog modules">
+            <search position="replace"><![CDATA[include_once($this->modules_dir."$module.php");]]></search>
+            <add><![CDATA[include_once(VQMod::modCheck('./'.$this->modules_dir."$module.php"));]]></add>
+        </operation>
+	</file>	
+		
+	 <file name="view/*.php">
+		<operation error="skip" info="Replace simplacms view includes/requires">
+            <search position="replace" regex="true"><![CDATA[~(require|include)(_once)?\s*\((?!VQMod::modCheck\()((?P<quote>[\"']?)View.php(?P=quote))~i]]></search>
+            <add><![CDATA[$1$2(VQMod::modCheck('./view/View.php')]]></add>
+        </operation>
+	</file>	 	
+
+	
+	
+	<file name="simpla/IndexAdmin.php">
+		<operation error="skip" info="Replace simplacms includes/requires for admin modules">
+            <search position="replace"><![CDATA[require_once('simpla/'.$module.'.php');]]></search>
+            <add><![CDATA[require_once(VQMod::modCheck('simpla/'.$module.'.php'));]]></add>
+        </operation>		
+		
+		<operation error="skip" info="Replace simplacms includes/requires for admin modules">
+            <search position="replace"><![CDATA['simpla/]]></search>
+            <add><![CDATA[$this->config->root_dir.'simpla/]]></add>
+        </operation>
+	</file>		
+
+	
+</modification>
