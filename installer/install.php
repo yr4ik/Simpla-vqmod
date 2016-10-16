@@ -124,13 +124,13 @@ $u->resetFileList();
 /* config/config.php CHANGE */
 $u->addFile('config/config.php');
 
-$u->addPattern('~(\[smarty\](?!\['.VQMOD_OPEN.'\]))([\s$]+)smarty_~m', '[smarty]
-['.VQMOD_OPEN.']
+$u->addPattern('~(\[smarty\](?!;'.VQMOD_OPEN.'))([\s$]+)smarty_~m', '[smarty]
+;'.VQMOD_OPEN.'
 minify_js				= true			; сжимать javascript (true=да, false=нет)
 minify_css				= true			; сжимать css (true=да, false=нет)
 static_gzip_level		= 9				; уровень сжатия (gzip) от 0 до 9
 static_expire_time 	= 172800		; время хранения в сек. (172800=2дня)
-['.VQMOD_CLOSE.']
+;'.VQMOD_CLOSE.'
 smarty_');
 
 $result = $u->run();
