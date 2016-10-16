@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
     <id>VQMOD CORE FOR SIMPLACMS - DO NOT REMOVE</id>
-    <version>1.1</version>
+    <version>1.3</version>
     <vqmver required="true">2.6.0</vqmver>
     <author>Polevik Yurii</author>
 
@@ -84,8 +84,6 @@ class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File  {
         </operation>
 	</file>	 	
 
-	
-	
 	<file name="simpla/IndexAdmin.php">
 		<operation error="skip" info="Replace simplacms includes/requires for admin modules">
             <search position="replace"><![CDATA[require_once('simpla/'.$module.'.php');]]></search>
@@ -97,47 +95,6 @@ class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File  {
             <add><![CDATA[$this->config->root_dir.'simpla/]]></add>
         </operation>
 	</file>		
-		
-	<file name="simpla/ThemeAdmin.php">
-		<operation error="skip" info="Add theme xml">
-            <search position="after"><![CDATA[$this->settings->theme = $action_theme;]]></search>
-            <add><![CDATA[
-				$vqmod_path = $this->config->root_dir.'vqmod/xml/theme_'.$action_theme.'_vqmod.xml';
-				$theme_xml_path = $this->config->root_dir.$this->themes_dir.$action_theme.'/vqmod.xml';
-				
-				if(file_exists($vqmod_path))
-					unlink($vqmod_path);
 
-				if(file_exists($theme_xml_path))
-					copy($theme_xml_path , $vqmod_path);
-			]]></add>
-        </operation>		
-	</file>		
 	
-	
-	<file name="simpla/ajax/*.php">
-		<operation error="skip" info="Include ajax_loader.php">
-            <search position="replace"><![CDATA[require_once('../../api/Simpla.php');]]></search>
-            <add><![CDATA[]]></add>
-        </operation>		
-	</file>	
-	
-	<file name="simpla/ajax/export.php">
-		<operation error="skip" info="Replace path">
-            <search position="replace"><![CDATA['../files/export/']]></search>
-            <add><![CDATA['simpla/files/export/']]></add>
-        </operation>
-		
-		<operation error="skip" info="Add root path">
-            <search position="replace"><![CDATA[$this->export_files_dir]]></search>
-            <add><![CDATA[$this->config->root_dir.$this->export_files_dir]]></add>
-        </operation>		
-	</file>		
-
-	<file name="simpla/design/*.css">
-	<operation error="skip" info="ReplaceCSS">
-		<search position="replace"><![CDATA[width: 290px;]]></search>
-		<add><![CDATA[width: 299px;]]></add>
-	</operation>
-</file>
 </modification>

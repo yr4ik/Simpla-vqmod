@@ -1,9 +1,11 @@
 Order deny,allow
 Deny from all
 
-<FilesMatch "(install|unistall)$">
-	RewriteEngine on
-	RewriteRule /vqmod/(install|unistall)$	/vqmod/installer/$1.php [L]
+<FilesMatch "^(install|uninstall)$">
+	Satisfy Any
+	Allow From All
 </FilesMatch>
 
 
+RewriteEngine on
+RewriteRule ^(install|uninstall)$ installer/$1.php [QSA]
