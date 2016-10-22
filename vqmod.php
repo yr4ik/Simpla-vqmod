@@ -210,6 +210,23 @@ abstract class VQMod {
 			return false;
 		}
 	}
+	
+	/**
+	 * VQMod::_getMods()
+	 *
+	 * @return array
+	 * @description Gets list of XML files
+	 */
+	private static function _getXmlList($path) {
+
+		$path = self::path($path, true);
+		
+		$xml_files = glob($path . '[^_]*.xml'); 
+		foreach (glob($path.'*', GLOB_ONLYDIR|GLOB_NOSORT) as $directory)
+			$xml_files = array_merge($xml_files, glob($directory . self::$directorySeparator . '[^_]*.xml'));
+
+		return $xml_files;
+	}
 
 	/**
 	 * VQMod::_getMods()
@@ -219,7 +236,7 @@ abstract class VQMod {
 	 */
 	private static function _getMods() {
 
-		self::$_modFileList = glob(self::path('vqmod/xml/', true) . '*.xml');
+		self::$_modFileList = self::_getXmlList('vqmod/xml/');
 
 		foreach(self::$_modFileList as $file) {
 			if(file_exists($file)) {

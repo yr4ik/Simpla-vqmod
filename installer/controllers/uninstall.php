@@ -90,6 +90,8 @@ class vqmodUninstall extends vqmodInstaller {
 			}
 		}
 		
+		if(is_link(ROOT_DIR . 'vqmod/xml/xmltheme.lnk'))
+			unlink(ROOT_DIR . 'vqmod/xml/xmltheme.lnk');
 		
 		// output result to user
 		if(!$this->changes) $result_log .= "\nVQMOD ALREADY UNINSTALLED!";

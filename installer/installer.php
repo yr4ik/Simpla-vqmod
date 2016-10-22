@@ -17,7 +17,7 @@ require_once(INSTALLER_DIR.'ugrsr.class.php');
 
 class vqmodInstaller extends Simpla {
 	
-	public $version = '1.4';
+	public $version = '1.5';
 
 	protected $resources = array(
 		'minify.php' => 'resize/minify.php',

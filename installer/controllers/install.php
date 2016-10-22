@@ -122,6 +122,8 @@ class vqmodInstall extends vqmodInstaller {
 			}
 		}
 		
+
+		symlink(ROOT_DIR . SIMPLA_DESIGN_DIR . '/' . $this->settings->theme . '/xml', ROOT_DIR . 'vqmod/xml/xmltheme.lnk');
 		
 		// output result to user
 		if(!$this->changes) $result_log .= "\nVQMOD ALREADY INSTALLED!";

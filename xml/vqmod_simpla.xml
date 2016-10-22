@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
     <id>VQMOD CORE FOR SIMPLACMS - DO NOT REMOVE</id>
-    <version>1.4</version>
+    <version>1.5</version>
     <vqmver required="true">2.6.0</vqmver>
     <author>Polevik Yurii</author>
 
@@ -96,5 +96,30 @@ class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File  {
         </operation>
 	</file>		
 
+	<file name="simpla/ThemeAdmin.php">
+		<operation error="log" info="Change set theme">
+            <search position="replace" regex="true"><![CDATA[~\$this->settings->theme\s*=\s*([^;]+);~]]></search>
+            <add><![CDATA[\$this->set_theme($1);]]></add>
+        </operation>
+		<operation error="log" info="Add set theme function">
+            <search position="before" ofset="-1"><![CDATA[private function get_themes()]]></search>
+            <add><![CDATA[
+	private function set_theme($theme)
+	{
+		$symlink = $this->config->root_dir.'vqmod/xml/xmltheme.lnk';
+		$xml_dir = $this->config->root_dir.$this->themes_dir.$theme.'/xml';
+		
+		if(is_link($symlink))
+			unlink($symlink);
+		
+		symlink($xml_dir, $symlink);
+
+		$this->settings->theme = $theme;
+	}
+	
+	]]></add>
+        </operation>		
+	</file>		
+	
 	
 </modification>
