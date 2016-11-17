@@ -20,8 +20,9 @@ abstract class VQMod {
 	public static $vqCachePath = 'vqmod/vqcache/';				// Relative path to cache file directory
 	public static $modCache = 'vqmod/mods.cache';				// Relative path to serialized mods array cache file
 	public static $checkedCache = 'vqmod/checked.cache';		// Relative path to already checked files array cache file
-	public static $protectedFilelist = 'vqmod/vqprotect.txt';	// Relative path to protected files array cache file
-	public static $pathReplaces = 'vqmod/pathReplaces.php';		// Relative path to dynamic path replacement file
+	public static $protectedFilelist = 'vqmod/cfg/vqprotect.txt';	// Relative path to protected files array cache file
+	public static $xmlDirlist = 'vqmod/cfg/vqdirs.txt';	// Relative path to xml dirs
+	public static $pathReplaces = 'vqmod/cfg/pathReplaces.php';		// Relative path to dynamic path replacement file
 	public static $logging = true;								// Flag to enabled/disable logging
 	public static $log;											// Log object reference
 	public static $fileModding = false;							// Reference to the current file being modified by vQmod for logging
@@ -217,13 +218,28 @@ abstract class VQMod {
 	 * @return array
 	 * @description Gets list of XML files
 	 */
-	private static function _getXmlList($path) {
+	private static function _getXmlList(){
 
-		$path = self::path($path, true);
+		$xml_files = array();
+		$directories = array('vqmod/xml');
 		
-		$xml_files = glob($path . '[^_]*.xml'); 
-		foreach (glob($path.'*', GLOB_ONLYDIR|GLOB_NOSORT) as $directory)
-			$xml_files = array_merge($xml_files, glob($directory . self::$directorySeparator . '[^_]*.xml'));
+		$xmlDirlist = self::path(self::$xmlDirlist, true);
+	
+		if($xmlDirlist && is_file($xmlDirlist)){
+			$paths = file($xmlDirlist, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+			if(!empty($paths))
+				$directories = array_merge($directories, $paths);
+		}
+		
+		foreach($directories as $xml_dir){
+			$xml_dir = self::path(trim($xml_dir));
+			
+			if(!is_dir($xml_dir))
+				continue;
+
+			foreach(glob($xml_dir . '[!_]*.xml') as $xml)
+				$xml_files[] = $xml;
+		}
 
 		return $xml_files;
 	}
@@ -236,7 +252,7 @@ abstract class VQMod {
 	 */
 	private static function _getMods() {
 
-		self::$_modFileList = self::_getXmlList('vqmod/xml/');
+		self::$_modFileList = self::_getXmlList();
 
 		foreach(self::$_modFileList as $file) {
 			if(file_exists($file)) {

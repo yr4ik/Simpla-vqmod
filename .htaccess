@@ -1,11 +1,8 @@
-Order deny,allow
-Deny from all
+Options -Indexes
 
-<FilesMatch "^(install|uninstall)$">
-	Satisfy Any
-	Allow From All
-</FilesMatch>
+#VQMOD_PROTECT
 
+#VQMOD_PROTECT
 
 RewriteEngine on
-RewriteRule ^(install|uninstall)$ installer/installer.php?action=$1 [QSA]
+RewriteRule (([^/]+)/)?(install|uninstall)$ lib/index.php?controller=$2&action=$3 [L,QSA]
