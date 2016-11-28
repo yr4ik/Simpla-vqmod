@@ -81,29 +81,15 @@ class vqmod_install extends vqInstaller {
 						VQMOD_CLOSE . "\n" 
 			),
 			
-			/* api/Simpla.php CHANGE */
-			/*'api/Simpla.php' => array(
-				"~<\?php[$\s]+(?<!".preg_quote(VQMOD_OPEN).")\/\*~m" => 
-						"<?php\n".
-						VQMOD_OPEN . "\n".
-						"if(!class_exists('VQMod')){\n".
-						"	require_once('./vqmod/vqmod.php');\n".
-						"	VQMod::bootup();\n".
-						"}\n".
-						VQMOD_CLOSE."\n\n/*",
-				'~include_once\(dirname\(__FILE__\)\.\'/\'\.\$class\.\'\.php\'\);~' =>
-						"\n" . VQMOD_OPEN . "\n".
-						"include_once(VQMod::modCheck(dirname(__FILE__).'/'.\$class.'.php'));\n".
-						VQMOD_CLOSE . "\n"
-			),*/
 			/* .htaccess CHANGE */
 			'.htaccess' => array(
 				'~RewriteEngine on[\s$]+((?!'.preg_quote(VQMOD_OPEN).')(#|Rewrite))~mi' =>
 						"RewriteEngine on\n\n".
 						VQMOD_OPEN . "\n".
-						"RewriteRule (js|design)/(.*)\.(js|css)$ {$this->resources['minify.php']} [L]\n".
-						"RewriteRule ajax/([\w_-]+)\.php$ {$this->resources['vqmod_ajax.php']} [L]\n".
-						"RewriteRule " . SIMPLA_ADMIN_DIR . "/ajax/(([\w_-]+)/)?(\w+)\.php$ {$this->resources['vqmod_simpla_ajax.php']} [L]\n".
+						"RewriteCond %{REQUEST_FILENAME} -f\n".
+						"RewriteRule ^(js|design)/(.*)\.(js|css)$ {$this->resources['minify.php']} [L]\n".
+						"RewriteCond %{REQUEST_FILENAME} -f\n".
+						"RewriteRule ^(" . SIMPLA_ADMIN_DIR . "/)?ajax/([\w_-]+)\.php$ \\$1{$this->resources['vqmod_ajax.php']} [L,QSA]\n".
 						VQMOD_CLOSE . "\n\n\\2"
 			),
 			/* config/config.php CHANGE */
@@ -154,7 +140,7 @@ class vqmod_install extends vqInstaller {
 				if($copy_result)
 					$result_log .= "/{$resource_path} was installed\n";
 				else
-					$result_log .= "/{$resource_path} can't installed\n";
+					$result_log .= "<font color=\"red\">/{$resource_path} can't installed</font>\n";
 			}
 		}
 		
@@ -193,16 +179,11 @@ class vqmod_install extends vqInstaller {
 				'~'.preg_quote(VQMOD_OPEN).'(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => "require_once('" . SIMPLA_ADMIN_DIR . "/IndexAdmin.php');"
 			),
 			
-			/* api/Simpla.php CHANGE */
-			/*'api/Simpla.php' => array(
-				'~'.preg_quote(VQMOD_OPEN).'\s+include_once(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => "include_once(dirname(__FILE__).'/'.\$class.'.php');",
-				'~'.preg_quote(VQMOD_OPEN).'(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => ''
-			),*/
-			
 			/* .htaccess CHANGE */
 			'.htaccess' => array(
 				'~'.preg_quote(VQMOD_OPEN).'(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => ''
 			),
+			
 			/* config/config.php CHANGE */
 			'config/config.php' => array(
 				'~\s+;'.preg_quote(VQMOD_OPEN).'(.+?);'.preg_quote(VQMOD_CLOSE).'~s' => ''
@@ -240,7 +221,7 @@ class vqmod_install extends vqInstaller {
 				if($delete)
 					$result_log .= "/{$resource_path} was deleted\n";
 				else
-					$result_log .= "/{$resource_path} can't delete\n";
+					$result_log .= "<font color=\"red\">/{$resource_path} can't delete</font>\n";
 
 			}
 		}

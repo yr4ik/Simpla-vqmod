@@ -58,7 +58,7 @@ class vqmodInstaller extends vqInstaller {
 			exit;
 		}
 
-		return '<h1>Simpla vQmod v.'.$this->version.'</h1>
+		return '<h1>Simpla vQmod v'.$this->version.'</h1>
 		<form method="post">
 			<input type="hidden" name="action" value="'.$this->request->get('action', 'string').'">
 			<input type="hidden" name="controller" value="'.$this->request->get('controller', 'string').'">
