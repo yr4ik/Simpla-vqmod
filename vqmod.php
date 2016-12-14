@@ -213,7 +213,7 @@ abstract class VQMod {
 	}
 	
 	/**
-	 * VQMod::_getMods()
+	 * VQMod::_getXmlList()
 	 *
 	 * @return array
 	 * @description Gets list of XML files
