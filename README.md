@@ -57,6 +57,7 @@
 
 
 **Примеры xml:**
+
 [Добавление нового поля к товару](http://forum.simplacms.ru/topic/11871-237-vqmod-simpacms-v13/#entry92231)
 
 
