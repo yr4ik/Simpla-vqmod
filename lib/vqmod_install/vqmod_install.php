@@ -23,20 +23,14 @@ class vqmod_install extends vqInstaller {
 		$this->resources = array(
 			'minify.php' => 'resize/minify.php',
 			'jsmin.php' => 'resize/jsmin.php',
-			'vqmod_ajax.php' => 'ajax/vqmod_ajax.php',
-			'vqmod_simpla_ajax.php' => SIMPLA_ADMIN_DIR . '/ajax/vqmod_ajax.php',
+			'vqmod_loader.php' => 'vqmod_loader.php',
+			'simpla_vqmod_loader.php' => SIMPLA_ADMIN_DIR . '/vqmod_loader.php',
 		);
 		
 		// Verify path is correct
 		$write_errors = array();
-		if(!is_writeable(ROOT_DIR . 'index.php')) {
-			$write_errors[] = 'index.php not writeable';
-		}
 		if(!is_writeable(ROOT_DIR . '.htaccess')) {
 			$write_errors[] = '.htaccess not writeable';
-		}
-		if(!is_writeable(ROOT_DIR . SIMPLA_ADMIN_DIR . '/index.php')) {
-			$write_errors[] = 'Administrator '.SIMPLA_ADMIN_DIR.'/index.php not writeable';
 		}
 		if(!is_writeable(ROOT_DIR . '/config/config.php')) {
 			$write_errors[] = 'config/config.php not writeable';
@@ -60,36 +54,24 @@ class vqmod_install extends vqInstaller {
 		
 		$result_log = '';
 		
-		$patches = array(
-			/* index.php CHANGE */
-			'index.php' => array(
-				'~require_once\(\'view/IndexView.php\'\);~' => 
-						"\n" . VQMOD_OPEN . "\n".
-						"require_once('./vqmod/vqmod.php');\n".
-						"VQMod::bootup();\n".
-						"require_once(VQMod::modCheck('view/IndexView.php'));\n".
-						VQMOD_CLOSE . "\n"
-			),
-			
-			/* simpla/index.php CHANGE */
-			SIMPLA_ADMIN_DIR . '/index.php' => array(
-				'~require_once\(\''.SIMPLA_ADMIN_DIR.'/IndexAdmin.php\'\);~' => 
-						"\n" . VQMOD_OPEN . "\n".
-						"require_once('./vqmod/vqmod.php');\n".
-						"VQMod::bootup();\n".
-						"require_once(VQMod::modCheck('".SIMPLA_ADMIN_DIR."/IndexAdmin.php'));\n".
-						VQMOD_CLOSE . "\n" 
-			),
-			
+		$patches = array(			
 			/* .htaccess CHANGE */
 			'.htaccess' => array(
 				'~RewriteEngine on[\s$]+((?!'.preg_quote(VQMOD_OPEN).')(#|Rewrite))~mi' =>
 						"RewriteEngine on\n\n".
 						VQMOD_OPEN . "\n".
+						//Cath REDIRECT_VQLOAD and stop it
+						"RewriteCond %{ENV:REDIRECT_VQLOAD} ^(.+)$\n".
+						"RewriteRule .* - [E=VQLOAD:%1,L]\n".
+						//Cath css and js
 						"RewriteCond %{REQUEST_FILENAME} -f\n".
 						"RewriteRule ^(js|design)/(.*)\.(js|css)$ {$this->resources['minify.php']} [L]\n".
+						//Cath view modules
 						"RewriteCond %{REQUEST_FILENAME} -f\n".
-						"RewriteRule ^(" . SIMPLA_ADMIN_DIR . "/)?ajax/([\w_-]+)\.php$ \\$1{$this->resources['vqmod_ajax.php']} [L,QSA]\n".
+						"RewriteRule ^(index|yandex|sitemap|ajax/([\w-\.]+)|payment/\w+/callback|resize/resize)\.php$ {$this->resources['vqmod_loader.php']} [QSA,E=VQLOAD:%{SCRIPT_FILENAME},L]\n".
+						//Cath admin protected modules
+						"RewriteCond %{REQUEST_FILENAME} -f\n".
+						"RewriteRule ^" . SIMPLA_ADMIN_DIR . "/(index|ajax(/stats)?/([\w-\.]+)|cml/1c_exchange)\.php$ {$this->resources['simpla_vqmod_loader.php']} [QSA,E=VQLOAD:%{SCRIPT_FILENAME},L]\n".
 						VQMOD_CLOSE . "\n\n\\2"
 			),
 			/* config/config.php CHANGE */
@@ -155,7 +137,7 @@ class vqmod_install extends vqInstaller {
 		
 		// output result to user
 		if(!$this->changes) $result_log .= "\n<font color=\"green\">VQMOD ALREADY INSTALLED!</font>";
-		elseif($this->writes != 4) $result_log .= "\n<font color=\"red\">ONE OR MORE FILES COULD NOT BE WRITTEN</font>";
+		elseif($this->writes != 2) $result_log .= "\n<font color=\"red\">ONE OR MORE FILES COULD NOT BE WRITTEN</font>";
 		elseif($this->copied != count($this->resources)) $result_log .= "\n<font color=\"red\">ONE OR MORE FILES COULD NOT BE COPIED</font>";
 		else $result_log .= "\n<font color=\"green\">VQMOD HAS BEEN INSTALLED ON YOUR SYSTEM!</font>";
 		
@@ -169,16 +151,7 @@ class vqmod_install extends vqInstaller {
 		$result_log = '';
 		
 		$patches = array(
-			/* index.php CHANGE */
-			'index.php' => array(
-				'~'.preg_quote(VQMOD_OPEN).'(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => "require_once('view/IndexView.php');"
-			),
-			
-			/* simpla/index.php CHANGE */
-			SIMPLA_ADMIN_DIR . '/index.php' => array(
-				'~'.preg_quote(VQMOD_OPEN).'(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => "require_once('" . SIMPLA_ADMIN_DIR . "/IndexAdmin.php');"
-			),
-			
+
 			/* .htaccess CHANGE */
 			'.htaccess' => array(
 				'~'.preg_quote(VQMOD_OPEN).'(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => ''
@@ -229,7 +202,7 @@ class vqmod_install extends vqInstaller {
 		
 		// output result to user
 		if(!$this->changes) $result_log .= "\n<font color=\"green\">VQMOD ALREADY UNINSTALLED!</font>";
-		elseif($this->writes != 4) $result_log .= "\n<font color=\"red\">ONE OR MORE FILES COULD NOT BE WRITTEN</font>";
+		elseif($this->writes != 2) $result_log .= "\n<font color=\"red\">ONE OR MORE FILES COULD NOT BE WRITTEN</font>";
 		elseif($this->deleted != count($this->resources)) $result_log .= "\n<font color=\"red\">ONE OR MORE FILES COULD NOT BE DELETED</font>";
 		else $result_log .= "\n<font color=\"green\">VQMOD HAS BEEN UNINSTALLED ON YOUR SYSTEM!</font>";
 		

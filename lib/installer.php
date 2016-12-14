@@ -15,7 +15,7 @@ require_once(INSTALLER_DIR.'config.php');
 
 class vqInstaller extends Simpla {
 	
-	public $vqmod_version = '2.1';
+	public $vqmod_version = '2.2';
 	
 	/* STATIC */
 	protected static $ugrsr = null;
