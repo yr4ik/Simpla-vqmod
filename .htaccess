@@ -8,4 +8,4 @@ Deny from all
 
 
 RewriteEngine on
-RewriteRule ^(install|uninstall)$ installer/$1.php [QSA]
+RewriteRule ^(install|uninstall)$ installer/installer.php?action=$1 [QSA]

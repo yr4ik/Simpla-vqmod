@@ -29,7 +29,14 @@ $sourceFile = VQMod::modCheck($sourceFile);
 $bGzip = false;
 $sCachedName = str_replace('/', '%', $sURL);   // Новое имя в кэше
 
-$cacheFile 	= CACHE_PATH . date('YmdHis', filemtime($sourceFile)) . '_' . $sCachedName;
+$settings_hash = (filemtime($sourceFile)+$simpla->config->static_expire_time+$simpla->config->static_gzip_level);
+if($simpla->config->minify_css)
+	$settings_hash += 1;
+
+if($simpla->config->minify_js)
+	$settings_hash += 1;
+
+$cacheFile 	= CACHE_PATH . base_convert($settings_hash, 10, 36) . '_' . $sCachedName;
 
 
 header('Content-type: ' . (false!==stripos($sURL, '.css') ? 'text/css' : 'text/javascript'));
@@ -53,10 +60,10 @@ if(isset($_SERVER['HTTP_ACCEPT_ENCODING'])){
 if ($bGzip){
 	if (!file_exists($cacheFile)){
 		removeOldCache($sCachedName);
-		
+
 		if(!is_dir(CACHE_PATH)) 
 			mkdir(CACHE_PATH, 0755, true);
-		
+
 		$cacheData = gzencode(getFileContents($sourceFile), $simpla->config->static_gzip_level, FORCE_GZIP);
 		file_put_contents($cacheFile, $cacheData);
 		die($cacheData);
@@ -68,7 +75,6 @@ if ($bGzip){
 	
 
 die(getFileContents($sourceFile));
-
 
 
 
