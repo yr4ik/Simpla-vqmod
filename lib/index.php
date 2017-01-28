@@ -58,17 +58,28 @@ class vqmodInstaller extends vqInstaller {
 			exit;
 		}
 
-		return '<h1>Simpla vQmod v'.$this->version.'</h1>
-		<form method="post">
-			<input type="hidden" name="action" value="'.$this->request->get('action', 'string').'">
-			<input type="hidden" name="controller" value="'.$this->request->get('controller', 'string').'">
+
+
+		$this->form->addElement(new Element_Hidden('action', $this->request->get('action', 'string')));
+		$this->form->addElement(new Element_Hidden('controller', $this->request->get('controller', 'string')));
+		$this->form->addElement(new Element_Hidden('rewrite', 'yes'));
+		
+		$this->form->addElement(new Element_HTML('<h1>vQmod Protection</h1>
 			<p>Здравствуйте!</p>
-			<p>Для продолжения необходимо авторизоватся<br>
+			<p>Для продолжения необходима авторизация<br>
 			<small>(примечание: учетная запись должна иметь доступ к настрокам сайта)</small></p>
-			<p><input type="checkbox" name="rewrite" value="1"> У меня есть доступ</p>
-			<input type="submit" value="Продолжить">
-			<input type="button" onclick="window.location=\''.$this->config->root_url.'\'" value="Отмена">
-		</form>';
+			<hr>'));
+		
+		
+		$this->form->addElement(new Element_Button('Продолжить', 'submit'));
+		
+		$this->form->addElement(new Element_Button('Отмена', 'button', array(
+			'class' => 'btn-default',
+			'onclick' => "window.location='/'"
+		)));
+
+
+		return $this->form->render(true);
 	}
 	
 	
@@ -91,11 +102,14 @@ class vqmodInstaller extends vqInstaller {
 			$controller = 'vqmod_install';
 			$component_dir = INSTALLER_DIR;
 		}
-
-		if(!file_exists($component_dir . $controller . '/' . $controller . '.php'))
+		
+		define('MOD_NAME',  $controller);
+		define('MOD_DIR', $component_dir . $controller . '/');
+		
+		if(!file_exists(MOD_DIR . $controller . '.php'))
 			throw new Exception('Компонент ' . $controller . ' не найден', 14);
 		
-		include_once($component_dir . $controller . '/' . $controller . '.php');
+		include_once(MOD_DIR . $controller . '.php');
 
 		if(!class_exists($controller))
 			throw new Exception('Ошибка контроллера', 15);
@@ -113,8 +127,7 @@ class vqmodInstaller extends vqInstaller {
 
 }
 
-
-
+session_start();
 error_reporting(E_ALL ^ E_NOTICE);
 header('Content-type: text/html; charset=utf-8'); 
 
@@ -123,34 +136,73 @@ try {
 	$content = $installer->display();
 	
 } catch (Exception $e) {
-    $content = '<div><b>[Ошибка ' . $e->getCode() . ']:</b>  ' . $e->getMessage() . '</div>';
+    $content = '<div class="alert alert-danger"><b>[Ошибка ' . $e->getCode() . ']:</b>  ' . $e->getMessage() . '</div>';
 }
 
 
 ?><html>
 <head>
+	<base href="<?php echo $installer->config->root_url;?>/"/>
+	<title>Simpla vQmod <?php echo $installer->vqmod_version;?></title>
+	
 	<meta http-equiv="Content-Type" content="text/html; charset=utf8" />
 	<meta http-equiv="Content-Language" content="ru" />
+
 	<meta http-equiv="cache-control" content="max-age=0" />
 	<meta http-equiv="cache-control" content="no-cache" />
 	<meta http-equiv="expires" content="0" />
 	<meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
 	<meta http-equiv="pragma" content="no-cache" />
-	<title>Simpla vQmod <?php echo $installer->version;?></title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	
+	<link rel="stylesheet" href="vqmod/lib/bootstrap/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="vqmod/lib/bootstrap/css/bootstrap-theme.min.css"/>
+	<link rel="stylesheet" href="vqmod/lib/bootstrap/style.css"/>
+
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+	
+	<style>
+		.lead {font-size: 16px}
+	</style>
+	
 </head>
-<style>
-	h1{font-size:26px; font-weight:normal}
-	p{font-size:19px;}
-	input{font-size:18px;}
-	td{padding-right:15px;font-size:18px; font-family:tahoma, verdana;}
-	p.error{color:red;}
-	div.maindiv{width: 600px; height: 300px; position: relative; left: 50%; top: 100px; margin-left: -300px; }
-</style>
 <body>
-	<div style="width:100%; height:100%;"> 
-	  <div class="maindiv">
-		<?php echo $content; ?>
-	  </div>
-	</div>
+    <div class="site-wrapper">
+      <div class="site-wrapper-inner">
+        <div class="cover-container">
+		
+          <div class="masthead clearfix">
+            <div class="inner">
+              <h3 class="masthead-brand">Simpla vQmod <?php echo $installer->vqmod_version;?></h3>
+              <nav>
+                <ul class="nav masthead-nav">
+					<li><a href="https://github.com/yr4ik/Simpla-vqmod" target="_blank">GitHub</a></li>
+					<li><a href="http://forum.simplacms.ru/topic/11871-237-vqmod-simplacms/" target="_blank">Forum</a></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <div class="inner cover">
+            <!--<h1 class="cover-heading">Cover your page.</h1>-->
+			<div class="lead">
+				<?php echo $content; ?>
+			</div>
+          </div>
+
+          <div class="mastfoot">
+            <div class="inner">
+              <p>Simpla vQmod v<?php echo $installer->vqmod_version;?> &copy; <a href="http://vk.com/polevik_yuriy">Polevik Yurii</a>.</p>
+            </div>
+          </div>
+		  
+        </div>
+      </div>
+    </div>
+	<script type="text/javascript">
+	$(function(){
+		$('button,input[type="button"]').filter(':not([class])').addClass('btn btn-default');
+	});
+	</script>
 </body>
 </html>

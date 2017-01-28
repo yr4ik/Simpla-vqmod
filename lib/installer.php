@@ -1,6 +1,6 @@
 <?php
 
-define('INSTALLER_DIR', dirname(__FILE__).'/');
+define('INSTALLER_DIR', str_replace('\\', '/', dirname(__FILE__).'/'));
 define('VQMOD_DIR', dirname(INSTALLER_DIR).'/');
 define('ROOT_DIR', dirname(VQMOD_DIR).'/');
 
@@ -15,35 +15,44 @@ require_once(INSTALLER_DIR.'config.php');
 
 class vqInstaller extends Simpla {
 	
-	public $vqmod_version = '2.2';
+	public $vqmod_version = '2.3';
 	
 	/* STATIC */
-	protected static $ugrsr = null;
+	protected static $vqinstaller = array();
 
 	
-	//Create new UGRSR class
+	//Create new UGRSR class (old version v1 - 2.2)
 	protected function ugrsr(){
-		
-		if(is_null(self::$ugrsr)){
-			
-			require_once(INSTALLER_DIR.'ugrsr.class.php');
-			
-			self::$ugrsr = new UGRSR(ROOT_DIR);
+		return $this->ugrsr;
+	}
 
-			// Set file searching to off
-			self::$ugrsr->file_search = false;
+	
+	public function __get($var){
+		
+		if(isset(self::$vqinstaller[$var]))
+			return self::$vqinstaller[$var];
+		
+
+		if(file_exists(INSTALLER_DIR . 'includes/'.$var.'.php')){
+			//API VQMOD INSTALLER
 			
-			// remove the # before this to enable debugging info
-			#self::$ugrsr->debug = true;
-			#self::$ugrsr->test_mode = true;
+			include_once(INSTALLER_DIR . 'includes/'.$var.'.php');
 			
+			$class_name = $var.'_vqinstaller';
+
+			self::$vqinstaller[$var] = new $class_name();
+			
+		}else{
+			
+			//SIMPLA API
+			self::$vqinstaller[$var] = parent::__get($var);
 		}
 		
-		return self::$ugrsr;
+		return self::$vqinstaller[$var];
 	}
 	
 	
-	
+
 	protected function install(){
 		return get_class() . ' не поддерживает install';
 	}
