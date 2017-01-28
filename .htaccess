@@ -1,8 +1,12 @@
 Options -Indexes
 
-#VQMOD_PROTECT
 
 #VQMOD_PROTECT
 
-RewriteEngine on
-RewriteRule (([^/]+)/)?(install|uninstall)$ lib/index.php?controller=$2&action=$3 [L,QSA]
+#VQMOD_PROTECT
+
+
+RewriteEngine On
+
+SetEnv VQLOAD true
+RewriteRule (([^/]+)/)?(install|uninstall)$ lib/index.php?controller=$2&action=$3 [QSA,L]
