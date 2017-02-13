@@ -62,4 +62,9 @@
 [Добавление нового поля к товару](http://forum.simplacms.ru/topic/11871-237-vqmod-simpacms-v13/#entry92231)
 
 **Примеры mod:**
-[Возможность оставлять комментарии к страницам](http://forum.simplacms.ru/topic/12009-237-vqmod-возможность-оставлять-комментарии-к-страни/)
+* [Все примеры](/_examples)
+* [Hello World](http://forum.simplacms.ru/topic/11871-237-vqmod-simplacms-v23/?p=95177)
+* [Возможность оставлять комментарии к страницам](http://forum.simplacms.ru/topic/12009-237-vqmod-возможность-оставлять-комментарии-к-страни/)
+* [Recapcha 2.0](http://forum.simplacms.ru/topic/10274-2-recaptcha-api-20-капча-от-гугл/?p=95271)
+* [Simple Resize](http://forum.simplacms.ru/topic/12103-237-vqmod-simple-resize/?p=94263)
+

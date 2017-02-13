@@ -27,8 +27,6 @@ class vqmod_install extends vqInstaller {
 		if(!class_exists("DOMDocument"))
 			$_errors[] = 'DOMDocument extension needs to be loaded for work';		
 		
-		if(getenv("REDIRECT_VQLOAD") !== 'true')
-			$_errors[] = 'Web-server can\'t not pass environment variables';
 		
 		if(!empty($_errors))
 			throw new Exception(implode('<br />', $_errors), 103);
@@ -70,9 +68,6 @@ class vqmod_install extends vqInstaller {
 					'~RewriteEngine on[\s$]+((?!'.preg_quote(VQMOD_OPEN).')(#|Rewrite))~mi' =>
 							"RewriteEngine on\n\n".
 							VQMOD_OPEN . "\n".
-							//Cath REDIRECT_VQLOAD and stop it
-							"RewriteCond %{ENV:REDIRECT_VQLOAD} ^(.+)$\n".
-							"RewriteRule .* - [E=VQLOAD:%1,L]\n".
 							
 							//File is exist or skip 3 RewriteRule
 							"RewriteCond %{REQUEST_FILENAME} !-f\n".
@@ -81,9 +76,9 @@ class vqmod_install extends vqInstaller {
 							//Cath css and js
 							"RewriteRule ^(js|design)/(.*)\.(js|css)$ {$this->resources[0]['dest']} [L]\n".
 							//Cath view modules
-							"RewriteRule ^(index|yandex|sitemap|ajax/([\w-\.]+)|payment/\w+/callback|resize/resize)\.php$ {$this->resources[2]['dest']} [QSA,E=VQLOAD:%{SCRIPT_FILENAME},L]\n".
+							"RewriteRule ^(index|yandex|sitemap|ajax/([\w-\.]+)|payment/\w+/callback|resize/resize)\.php$ {$this->resources[2]['dest']}?VQLOAD=%{REQUEST_FILENAME} [QSA,L]\n".
 							//Cath admin protected modules
-							"RewriteRule ^" . SIMPLA_ADMIN_DIR . "/(index|ajax(/stats)?/([\w-\.]+)|cml/1c_exchange)\.php$ {$this->resources[3]['dest']} [QSA,E=VQLOAD:%{SCRIPT_FILENAME},L]\n".
+							"RewriteRule ^" . SIMPLA_ADMIN_DIR . "/(index|ajax(/stats)?/([\w-\.]+)|cml/1c_exchange)\.php$ {$this->resources[3]['dest']}?VQLOAD=%{REQUEST_FILENAME} [QSA,L]\n".
 							VQMOD_CLOSE . "\n\n\\2"
 				),
 				/* config/config.php CHANGE */
@@ -226,16 +221,5 @@ class vqmod_install extends vqInstaller {
 	}
 	
 }
-
-
-
-
-
-
-
-
-
-
-
 
 

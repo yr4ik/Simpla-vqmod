@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vqinstaller>
+    <id>TRASLIT</id>
+	<install>
+		<copydir src="[MOD]/files" dest="/" replace="true"/>
+	</install>	
+	
+	<uninstall>
+		<delete file="/api/Translit.php"/>
+		<delete dir="/api/translit"/>
+		<delete file="/vqmod/xml/translit.xml"/>
+	</uninstall>
+</vqinstaller>

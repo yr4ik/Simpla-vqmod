@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>SIMPLE RESIZE</id>
+    <version>1.0</version>
+    <vqmver required="true">2.6.0</vqmver>
+    <author>Polevik Yurii</author>
+
+	<file name="api/Image.php">
+		<operation error="log" info="Add varibles">
+            <search position="after" offset="1"><![CDATA[class Image]]></search>
+            <add><![CDATA[
+	protected $allowed_sizes = array();
+	protected $sizes_cache_file = 'sizes.txt';
+			]]></add>
+        </operation>		
+		
+		<operation error="log" info="Add token functions">
+            <search position="before"><![CDATA[function download_image]]></search>
+            <add><![CDATA[
+	private function get_allowed_sizes($type){
+		
+		if(!isset($this->allowed_sizes[$type])){
+			
+			$this->allowed_sizes[$type] = array();
+			
+			$cache_file = $this->config->root_dir.$this->config->resized_dir.$type.'/'.$this->sizes_cache_file;
+			if(file_exists($cache_file) && ($sizes=file_get_contents($cache_file)))
+				$this->allowed_sizes[$type] = unserialize($sizes);
+			
+		}
+
+		return $this->allowed_sizes[$type];
+	}
+	
+	private function set_allowed_sizes($type, $sizes){
+		
+		$cache_dir = $this->config->root_dir.$this->config->resized_dir.$type.'/';
+		if(!is_dir($cache_dir))
+			mkdir($cache_dir, 0777, true);
+			
+		file_put_contents($cache_dir.$this->sizes_cache_file, serialize($sizes));
+		
+		$this->allowed_sizes[$type] = $sizes;
+	}
+			]]></add>
+        </operation>		
+		
+		<operation error="log" info="Add token checks">
+            <search position="before"><![CDATA[if('.' != ($dirname = pathinfo($filename,  PATHINFO_DIRNAME)))]]></search>
+            <add><![CDATA[
+		//Проверяем разрешенные параметры
+		$allow_sizes = $this->get_allowed_sizes($type);
+		$params_key = $width.'x'.$height.($set_watermark ? 'w':'');
+		
+		// Если нет - записываем в разрешенные
+		if(!in_array($params_key, $allow_sizes)){
+			$allow_sizes[] = $params_key;
+			$this->set_allowed_sizes($type, $allow_sizes);
+		}
+			]]></add>
+        </operation>
+		
+		
+		
+	</file>		
+	
+	
+</modification>

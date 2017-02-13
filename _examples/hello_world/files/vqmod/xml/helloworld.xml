@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>SIMPLA HELLO WORLD</id>
+    <version>1.0</version>
+    <vqmver required="true">2.6.0</vqmver>
+    <author>Polevik Yurii</author>
+
+	<file name="api/Simpla.php">
+		<operation error="log" info="">
+            <search position="after"><![CDATA['Feedbacks',]]></search>
+            <add><![CDATA['helloworld'     => 'HelloWorld',]]></add>
+        </operation>
+	</file>	
+
+	<file name="api/Managers.php">
+		<operation error="log" info="">
+            <search position="replace"><![CDATA[, 'license']]></search>
+            <add><![CDATA[, 'license', 'slides']]></add>
+        </operation>
+	</file>			
+	
+
+	<file name="simpla/IndexAdmin.php">
+		<operation error="log" info="">
+            <search position="after"><![CDATA['ManagerAdmin']]></search>
+            <add><![CDATA['HelloAdmin'         => 'settings',]]></add>
+        </operation>
+	</file>	
+	
+	<file name="simpla/design/html/comments.tpl,simpla/design/html/feedbacks.tpl">
+		<operation error="skip" info="">
+            <search position="before"><![CDATA[{/capture}]]></search>
+            <add><![CDATA[{if in_array('callbacks', $manager->permissions)}<li><a href="index.php?module=CallbacksAdmin">Обратный звонок</a></li>{/if}]]></add>
+        </operation>
+	</file>		
+
+	
+</modification>

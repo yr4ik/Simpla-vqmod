@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vqinstaller>
+    <id>HELLO WORLD</id>
+	<install>
+		<sql><![CDATA[CREATE TABLE IF NOT EXISTS __hello_world (
+			  `id` int(11) NOT NULL AUTO_INCREMENT,
+			  `name` varchar(255) NOT NULL,
+			  `visible` tinyint(1) DEFAULT '1',
+			  PRIMARY KEY (`id`),
+			  KEY `position` (`position`)
+			) ENGINE=MyISAM DEFAULT CHARSET=utf8
+		]]></sql>		
+		
+		
+		<copydir src="[MOD]/files" dest="/" replace="true"/>
+
+		<create dir="/test" mode="755"/>
+		
+		<create file="/test/sub/index.php" mode="644"><![CDATA[<?php
+
+			echo 'Hello World Test.php';
+			
+		]]></create>
+
+		<chmod file="/test/sub/index.php" mode="666"/>
+		
+		<rename src="/test/sub/" dest="/test/sub2"/>
+
+		<copydir src="/test/sub2/" dest="/test/sub3"/>
+		
+		<patch file="/test/sub3/index.php">
+			<search><![CDATA[~Test\.php~]]></search>
+			<replace>Test text Replace</replace>
+		</patch>
+
+	</install>
+	
+	<uninstall>
+		<sql><![CDATA[DROP TABLE IF EXISTS __hello_world]]></sql>
+
+		<delete dir="/test"/>
+		<delete file="/api/HelloWord.php"/>
+		<delete file="/simpla/HelloAdmin.php"/>
+		<delete file="/simpla/design/html/hello.tpl"/>
+		<delete file="/vqmod/xml/helloworld.xml"/>
+	</uninstall>
+</vqinstaller>

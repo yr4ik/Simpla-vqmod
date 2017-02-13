@@ -8,5 +8,4 @@ Options -Indexes
 
 RewriteEngine On
 
-SetEnv VQLOAD true
-RewriteRule (([^/]+)/)?(install|uninstall)$ lib/index.php?controller=$2&action=$3 [QSA,L]
+RewriteRule ^(([^/]+)/)?(install|uninstall)$ lib/index.php?controller=$2&action=$3 [QSA,L]

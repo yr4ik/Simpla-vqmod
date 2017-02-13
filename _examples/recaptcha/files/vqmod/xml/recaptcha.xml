@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>ReCaptcha</id>
+    <version>2.0</version>
+    <vqmver required="true">2.6.0</vqmver>
+    <author>Polevik Yurii</author>
+
+
+	<file name="api/Simpla.php">
+		<operation error="log" info="">
+            <search position="after"><![CDATA['Feedbacks',]]></search>
+            <add><![CDATA['recaptcha'     => 'ReCaptcha',]]></add>
+        </operation>
+	</file>	
+	
+	<file name="design/*/html/index.tpl">
+		<operation error="log" info="">
+            <search position="before"><![CDATA[</head>]]></search>
+            <add><![CDATA[<script src='https://www.google.com/recaptcha/api.js'></script>]]></add>
+        </operation>
+	</file>	
+	
+	<file name="simpla/SettingsAdmin.php">
+		<operation error="log" info="">
+            <search position="after"><![CDATA[$this->settings->units]]></search>
+            <add><![CDATA[
+/* ReCaptcha */
+$this->settings->site_code = $this->request->post('site_code');            
+$this->settings->secret_code = $this->request->post('secret_code');
+			]]></add>
+        </operation>
+	</file>
+	
+	<file name="simpla/design/html/settings.tpl">
+		<operation error="log" info="">
+            <search position="before"><![CDATA[prostiezvonki.ru]]></search>
+            <add><![CDATA[
+	<h2>Управление <a href="https://www.google.com/recaptcha/admin">ключами ReCaptcha API</a></h2>            
+	<ul>                    
+		<li><label class=property>Ключ</label><input name="site_code" class="simpla_inp" type="text" value="{$settings->site_code|escape}" /></li>
+		<li><label class=property>Секретный ключ</label><input name="secret_code" class="simpla_inp" type="text" value="{$settings->secret_code|escape}" /></li>            
+	</ul>
+			]]></add>
+        </operation>
+	</file>
+
+	<file path="view/" name="ProductView.php,BlogView.php,PageView.php,RegisterView.php,FeedbackView.php,CartView.php">
+		<operation error="skip" info="">
+            <search position="replace"><![CDATA[post('captcha_code']]></search>
+            <add><![CDATA[post('g-recaptcha-response']]></add>
+        </operation>		
+		<operation error="skip" info="">
+            <search position="replace" regex="true"><![CDATA[~
+			(empty\(\$_SESSION\['captcha_code'\]\)\s*\|\|\s*)?
+			\$_SESSION\['captcha_code'\]\s*\!=\s*\$captcha_code
+			(\s*\|\|\s*empty\(\$captcha_code\))?
+			~x]]></search>
+            <add><![CDATA[!$this->recaptcha->is_valid($captcha_code)]]></add>
+        </operation>	
+		<operation error="skip" info="">
+            <search position="replace"><![CDATA[unset($_SESSION['captcha_code']);]]></search>
+            <add><![CDATA[]]></add>
+        </operation>
+	</file>
+
+</modification>

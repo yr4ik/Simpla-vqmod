@@ -2,6 +2,7 @@
 
 
 
+
 class logger_vqinstaller {
 	
 	private $_sep = null;

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>TRANSLIT</id>
+    <version>1.0</version>
+    <vqmver required="true">2.6.0</vqmver>
+    <author>Polevik Yurii</author>
+
+	<file name="api/Simpla.php">
+		<operation error="log" info="">
+            <search position="after"><![CDATA['Feedbacks',]]></search>
+            <add><![CDATA['translit'     => 'Translit',]]></add>
+        </operation>
+	</file>	
+</modification>
