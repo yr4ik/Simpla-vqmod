@@ -8,4 +8,5 @@ Options -Indexes
 
 RewriteEngine On
 
-RewriteRule ^(([^/]+)/)?(install|uninstall)$ lib/index.php?controller=$2&action=$3 [QSA,L]
+RewriteRule ^(manager|mods|install|uninstall)?$ lib/index.php?action=$1 [QSA,L]
+RewriteRule ^([\w\d]+)/(install|uninstall)$ lib/index.php?controller=$1&action=$2 [QSA,L]

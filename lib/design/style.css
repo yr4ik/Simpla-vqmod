@@ -32,7 +32,7 @@ a:hover {
 html,
 body {
   height: 100%;
-  background-color: #4f4f4f;
+  background-color: #5f5f5f;
 }
 body {
   color: #fff;
@@ -43,6 +43,28 @@ body {
 h1 {
 	margin-bottom: 25px;
 }
+
+
+.text-success,
+.text-danger,
+.text-warning,
+.text-info {
+	text-shadow: none;
+}
+	
+.text-success {
+	color: #25D928;
+}
+.text-danger {
+	color: #571010;
+}
+.text-warning {
+	color: #F79C00;
+}
+.text-info {
+	color: #7BCAF2;
+}
+
 
 /* Extra markup and styles for table-esque vertical and horizontal centering */
 .site-wrapper {
@@ -56,10 +78,10 @@ h1 {
 .site-wrapper-inner {
   display: table-cell;
   vertical-align: top;
+  height: 100%;
 }
 .cover-container {
-  margin-right: auto;
-  margin-left: auto;
+  margin: 0 auto;
 }
 
 /* Padding for spacing */
@@ -93,19 +115,22 @@ h1 {
   color: #fff; /* IE8 proofing */
   color: rgba(255,255,255,.75);
   border-bottom: 2px solid transparent;
+  text-decoration: none;
+  line-height: 50px;
+  padding-bottom: 6px;
 }
 .masthead-nav > li > a:hover,
 .masthead-nav > li > a:focus {
   background-color: transparent;
-  color: #fff;
-  border-bottom-color: #fff;
+  color: #eee;
+  border-bottom-color: #a9a9a9;
 }
-/*.masthead-nav > .active > a,
+.masthead-nav > .active > a,
 .masthead-nav > .active > a:hover,
 .masthead-nav > .active > a:focus {
   color: #fff;
   border-bottom-color: #fff;
-}*/
+}
 
 @media (min-width: 768px) {
   .masthead-brand {
@@ -137,8 +162,18 @@ h1 {
 .mastfoot {
   color: #999; /* IE8 proofing */
   color: rgba(255,255,255,.5);
+  background-color: #333;
+  border-top: 1px solid #2f2f2f;
+  position: fixed;
+  bottom: 0;
+  padding: 15px 0;
 }
 
+
+.lead {
+	padding: 80px 0 60px;
+	font-size: 16px;
+}
 
 /*
  * Affix and center
@@ -147,12 +182,12 @@ h1 {
 @media (min-width: 768px) {
   /* Pull out the header and footer */
   .masthead {
-    position: fixed;
+    position: absolute;
     top: 0;
   }
   .mastfoot {
-    position: fixed;
-    bottom: 0;
+   /* position: absolute;
+    bottom: 0;*/
   }
   /* Start the vertical centering */
   .site-wrapper-inner {
@@ -168,8 +203,24 @@ h1 {
 
 @media (min-width: 992px) {
   .masthead,
-  .mastfoot,
   .cover-container {
     width: 850px;
   }
+}
+
+
+
+table.components > tbody > tr > td {
+	vertical-align: middle;
+}
+
+.components .actions {
+	white-space: nowrap;
+}
+
+.components .actions a {
+	margin: 0 2px;
+}
+.components .actions a:hover {
+	color: #bfbfbf
 }

@@ -1,11 +1,12 @@
 <?php
 
-/**
- *
- * @Simpla HelloWorld Install/Uninstal Script
- * @author Polevik Yurii 2016 - https://vk.com/polevik_yuriy
- *
- */
+/*
+*	@ name: Recaptcha
+*	@ version: 1.1
+*	@ description: Google Recaptcha v2.0
+*	@ author: Polevik Yurii
+*	@ author_url: http://vk.com/polevik_yuriy
+*/
 
 
 class recaptcha extends vqInstaller {
@@ -24,6 +25,8 @@ class recaptcha extends vqInstaller {
 		if(!$this->is_confirmed()){
 			
 			$this->form->addElement(new Element_Hidden('confirmed', 'yes'));
+			
+			$this->form->addElement(new Element_HTML('<p>Установить?</p>'));
 			$this->form->addElement(new Element_Button('Да', 'submit'));
 			
 			$this->form->addElement(new Element_Button('Отмена', 'button', array(
@@ -35,23 +38,19 @@ class recaptcha extends vqInstaller {
 			
 			$this->installer->exec('manifest.xml', 'install');
 			
-			$this->form->addElement(new Element_HTML('<br><p>Для завершения в шаблонах вашей темы где выводиться капча замените ее на</p>'));
+			$captha_code = htmlentities('<div class="g-recaptcha" data-sitekey="{$settings->site_code|escape}"></div>');
+			
+			$html = <<<HTML
+			<br><p>Для завершения в шаблонах вашей темы где выводиться капча замените ее на</p>
+			<p>код recaptcha: <code>{$captha_code}</code></p>
+			<p class="small text-warning">Шаблоны для замены: cart.tpl, feedback.tpl, post.tpl, product.tpl, register.tpl</p>
+			<div class="alert alert-success">Модуль установлен</div>
+			<button onclick="window.location='/'" class="btn btn-default">Перейти на сайт</button>
+HTML;
 
-			$this->form->addElement(new Element_Textbox("код отображения recaptcha: ", "short-code", array(
-				'readonly' => 'readonly',
-				'value' => '<div class="g-recaptcha" data-sitekey="{$settings->site_code|escape}"></div>'
-			)));
+			$this->form->addElement(new Element_HTML($html));
 
-			$this->form->addElement(new Element_HTML('<p class="small">Шаблоны для замены: cart.tpl, feedback.tpl, post.tpl, product.tpl, register.tpl</p>'));
-			
-			$this->form->addElement(new Element_HTML("<div class=\"alert alert-success\">Модуль установлен</div>"));
-		
-			$this->form->addElement(new Element_Button('Перейти на сайт', 'button', array(
-				'class' => 'btn-default',
-				'onclick' => "window.location='/'"
-			)));
-			
-			
+			$this->mod->status = 'installed';
 		}
 
 		return $this->form->render(true);
@@ -83,6 +82,8 @@ class recaptcha extends vqInstaller {
 				'class' => 'btn-default',
 				'onclick' => "window.location='/'"
 			)));
+			
+			$this->mod->status = 'uninstalled';
 			
 		}
 

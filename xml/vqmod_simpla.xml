@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
-    <id>VQMOD CORE FOR SIMPLACMS - DO NOT REMOVE</id>
-    <version>2.2</version>
+    <id>VQMOD_CORE_SIMPLACMS</id>
+    <version>2.3</version>
     <vqmver required="true">2.6.0</vqmver>
     <author>Polevik Yurii</author>
 

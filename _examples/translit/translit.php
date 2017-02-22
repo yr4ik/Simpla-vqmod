@@ -1,11 +1,13 @@
 <?php
 
-/**
- *
- * @Simpla translit Install/Uninstal Script
- * @author Polevik Yurii 2016 - https://vk.com/polevik_yuriy
- *
- */
+/*
+*	@ name: Translit
+*	@ version: 1.1
+*	@ description: Универсальный транслит 
+*	@ author: Polevik Yurii
+*	@ author_url: http://vk.com/polevik_yuriy
+*/
+
 
 
 class translit extends vqInstaller {
@@ -13,7 +15,7 @@ class translit extends vqInstaller {
 	
 
 	public function __construct(){
-		$this->form->addElement(new Element_HTML('<legend>Translit</legend>'));
+		$this->form->addElement(new Element_HTML('<legend>'.$this->mod->name . ' ' . $this->mod->version . '</legend>'));
 	}
 	
 
@@ -55,7 +57,7 @@ class translit extends vqInstaller {
 				'onclick' => "window.location='/'"
 			)));
 			
-			
+			$this->mod->status = 'installed';
 		}
 
 		return $this->form->render(true);
@@ -97,6 +99,8 @@ class translit extends vqInstaller {
 				'class' => 'btn-default',
 				'onclick' => "window.location='/'"
 			)));
+			
+			$this->mod->status = 'uninstalled';
 			
 		}
 

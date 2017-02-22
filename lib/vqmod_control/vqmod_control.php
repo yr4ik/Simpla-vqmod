@@ -1,16 +1,19 @@
 <?php
 
-/**
- *
- * @Simpla vQmod Install/Uninstal Script
- * @author Polevik Yurii 2016 - https://vk.com/polevik_yuriy
- *
- */
+/*
+	@ name: vQmod for Simpla CMS
+	@ version: 2.5
+	@ description: Установочный компонент vqmod
+	@ author: Polevik Yurii
+	@ author_url: http://vk.com/polevik_yuriy
+*/
 
-class vqmod_install extends vqInstaller {
+
+class vqmod_control extends vqInstaller {
 
 	private $resources = array();
 	
+
 	public function __construct(){
 		
 		// Verify path is correct
@@ -38,24 +41,24 @@ class vqmod_install extends vqInstaller {
 			array('src' => '[MOD]/resources/vqmod_loader.php', 'dest'  => 'vqmod_loader.php'),
 			array('src' => '[MOD]/resources/simpla_vqmod_loader.php', 'dest'  => SIMPLA_ADMIN_DIR . '/vqmod_loader.php'),
 		);
-		
-		
 	}
 
+
+	
+	
+	
 	public function install(){
 		
-		$form = $this->form;
-		
-		$form->addElement(new Element_HTML('<h1>Установка vQmod '.$this->vqmod_version.'</h1>'));
+		$this->form->addElement(new Element_HTML('<h1>Установка vQmod '.$this->mod->version.'</h1>'));
 		
 		if(!$this->is_confirmed()){
 			
-			$form->addElement(new Element_HTML('<p>Вы подтверждаете начало установки?</p><hr>'));
+			$this->form->addElement(new Element_HTML('<p>Вы подтверждаете начало установки?</p><hr>'));
 			
-			$form->addElement(new Element_Hidden('confirmed', 'yes'));
-			$form->addElement(new Element_Button('Да', 'submit'));
+			$this->form->addElement(new Element_Hidden('confirmed', 'yes'));
+			$this->form->addElement(new Element_Button('Да', 'submit'));
 			
-			$form->addElement(new Element_Button('Отмена', 'button', array(
+			$this->form->addElement(new Element_Button('Отмена', 'button', array(
 				'class' => 'btn-default',
 				'onclick' => "window.location='/'"
 			)));
@@ -121,42 +124,42 @@ class vqmod_install extends vqInstaller {
 			$result_log = "<div class=\"text-left\">{$result_log}</div><br>";
 			
 			$result_counts = $this->installer->get_counter();
-
 			if(!$result_counts->changes) $result_log .= "<div class=\"alert alert-success\">VQMOD ALREADY INSTALLED!</div>";
 			elseif($result_counts->writes != count($patches)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE WRITTEN</div>";
 			elseif($result_counts->copied != count($this->resources)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE COPIED</div>";
-			else $result_log .= "<div class=\"alert alert-success\">VQMOD HAS BEEN INSTALLED ON YOUR SYSTEM!</div>";
+			else{
+				$result_log .= "<div class=\"alert alert-success\">VQMOD HAS BEEN INSTALLED ON YOUR SYSTEM!</div>";
+				$this->mod->status = 'installed';
+			}
+			$this->form->addElement(new Element_HTML($result_log));
 			
-			$form->addElement(new Element_HTML($result_log));
-			
-			$form->addElement(new Element_Button('Перейти на сайт', 'button', array(
+			$this->form->addElement(new Element_Button('Перейти на сайт', 'button', array(
 				'class' => 'btn-default',
 				'onclick' => "window.location='/'"
 			)));
 		}
 		
 		
-		return $form->render(true);
+		return $this->form->render(true);
 	}
 	
 	
 
 	public function uninstall(){
 		
-		$form = $this->form;
-		
-		$form->addElement(new Element_HTML('<h1>Удаление vQmod '.$this->vqmod_version.'</h1>'));
+
+		$this->form->addElement(new Element_HTML('<h1>Удаление vQmod '.$this->mod->version.'</h1>'));
 		
 		if(!$this->is_confirmed()){
 			
-			$form->addElement(new Element_HTML('<p>Компоненты vqmod могут быть все еще активны.</p>
+			$this->form->addElement(new Element_HTML('<p>Компоненты vqmod могут быть все еще активны.</p>
 			<p>После удаления они не смогут нормально функционировать</p>
 			<p>Вы подтверждаете удаление?</p><hr>'));
 			
-			$form->addElement(new Element_Hidden('confirmed', 'yes'));
-			$form->addElement(new Element_Button('Да', 'submit'));
+			$this->form->addElement(new Element_Hidden('confirmed', 'yes'));
+			$this->form->addElement(new Element_Button('Да', 'submit'));
 			
-			$form->addElement(new Element_Button('Отмена', 'button', array(
+			$this->form->addElement(new Element_Button('Отмена', 'button', array(
 				'class' => 'btn-default',
 				'onclick' => "window.location='/'"
 			)));
@@ -202,20 +205,113 @@ class vqmod_install extends vqInstaller {
 			if(!$result_counts->changes) $result_log .= "<div class=\"alert alert-success\">VQMOD ALREADY UNINSTALLED!</div>";
 			elseif($result_counts->writes != count($patches)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE WRITTEN</div>";
 			elseif($result_counts->deleted_file != count($this->resources)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE DELETED</div>";
-			else $result_log .= "<div class=\"alert alert-success\">VQMOD HAS BEEN UNINSTALLED ON YOUR SYSTEM!</div>";
-
-			$form->addElement(new Element_HTML($result_log));
+			else{
+				$result_log .= "<div class=\"alert alert-success\">VQMOD HAS BEEN UNINSTALLED ON YOUR SYSTEM!</div>";
+				$this->mod->status = 'uninstalled';
+			}
 			
-			$form->addElement(new Element_Button('Перейти на сайт', 'button', array(
+			$this->form->addElement(new Element_HTML($result_log));
+			
+			$this->form->addElement(new Element_Button('Перейти на сайт', 'button', array(
 				'class' => 'btn-default',
 				'onclick' => "window.location='/'"
 			)));
 		}
 		
-		return $form->render(true);
+		return $this->form->render(true);
 	}
 	
 	
+	
+	
+	public function mods(){
+		
+	
+		$mods = glob(MODS_DIR. '*', GLOB_ONLYDIR);
+		
+
+		foreach($mods as &$_mod)
+			$_mod =  $this->mods->get(basename($_mod));
+
+		array_unshift($mods, $this->mods->get('vqmod_control'));
+		
+		$this->design->assign('mods', $mods);
+		
+		return $this->design->fetch('mods.tpl');
+	}
+	
+	
+	
+	
+	public function manager(){
+		
+ 		if($xml_turn = trim($this->request->get('turn'))){
+			
+			if(is_file(VQMOD_DIR. "xml/{$xml_turn}.xml")){
+				
+				$is_off = (substr($xml_turn, 0, 1)=='_');
+				
+				if($is_off)
+					$new_xml = substr($xml_turn, 1);
+				else
+					$new_xml = '_'.$xml_turn;
+
+				if(rename(VQMOD_DIR. "xml/{$xml_turn}.xml", VQMOD_DIR. "xml/{$new_xml}.xml"))
+					$this->design->assign('turn_xml', $this->get_vqxml_data(VQMOD_DIR. "xml/{$new_xml}.xml"));
+					
+			}else{
+				header('Location: '.$this->request->url(array('turn'=>null)));
+				exit;
+			}
+		}
+
+
+		$xmls = glob(VQMOD_DIR. 'xml/*.xml');
+		
+		if(!$xmls)
+			throw new Exception('xml-модули отсутствуют', 21);
+			
+		foreach($xmls as &$_xml)
+			$_xml =  $this->get_vqxml_data($_xml);
+
+		$this->design->assign('xmls', $xmls);
+		
+		return $this->design->fetch('manager.tpl');
+	}
+	
+	
+	
+	
+	
+	private function get_vqxml_data($xml_path){
+		
+		$data = array(
+			'id' => basename($xml_path, '.xml'),
+			'version' => '',
+			'author' => ''
+		);
+		
+		$dom = new DOMDocument('1.0', 'UTF-8');
+		$dom->preserveWhiteSpace = false;
+		
+		$dom->load($xml_path);
+		$modification = $dom->getElementsByTagName('modification')->item(0);
+		
+
+		foreach($data as $tag=>$value){
+			$node = $modification->getElementsByTagName($tag)->item(0);
+			if($node && ($nodeValue = trim((string) $node->nodeValue)))
+				$data[$tag] = $nodeValue;
+		}
+		
+		$data['xml_file'] = basename($xml_path, '.xml');
+		$data['active'] = !(substr($data['xml_file'], 0,1)=='_');
+		
+		return (object) $data;
+	}
+		
+
+		
 	private function is_confirmed(){
 		return $this->request->post('confirmed', 'boolean');
 	}

@@ -36,36 +36,37 @@ class installer_vqinstaller extends vqInstaller {
 	private $_index_event = 0;
 	
 	
-	protected $shortcuts = array();
-	protected $disabled_delete_dirs = array();
+	protected $shortcuts = array(
+		//[CFG:config_value],
+		//[CONST:constant_name],
+		//[MOD],
+		//[ADMIN],
+	);
+	
+	protected $disabled_delete_dirs = array(
+		'', // root
+		'api',
+		'ajax',
+		'config',
+		'files',
+		'view',
+		'payment',
+		'vqmod',
+		'vqmod/xml',
+		'vqmod/mod',
+		'vqmod/lib',
+	);
 	
 	public function __construct(){
 		
-		$this->disabled_delete_dirs = array(
-			'', // root
-			'api',
-			'ajax',
-			'config',
-			'files',
-			'view',
-			'payment',
-			SIMPLA_DESIGN_DIR,
-			SIMPLA_ADMIN_DIR,
-			SIMPLA_ADMIN_DIR.'/ajax',
-			SIMPLA_ADMIN_DIR.'/design',
-			'vqmod',
-			'vqmod/xml',
-			'vqmod/mod',
-			'vqmod/lib',
-		);
+		$this->disabled_delete_dirs[] = SIMPLA_DESIGN_DIR;
+		$this->disabled_delete_dirs[] = SIMPLA_ADMIN_DIR;
+		$this->disabled_delete_dirs[] = SIMPLA_ADMIN_DIR.'/ajax';
+		$this->disabled_delete_dirs[] = SIMPLA_ADMIN_DIR.'/design';
 
-		$this->shortcuts = array(
-			//[CFG:config_value],
-			//[CONST:constant_name],
-			'[MOD]' => substr(MOD_DIR, 0, -1),
-			'[ADMIN]' => ROOT_DIR . SIMPLA_ADMIN_DIR
-		);
+		$this->shortcuts['[MOD]'] = substr($this->mod->directory, 0, -1);
 		
+		$this->shortcuts['[ADMIN]'] =  ROOT_DIR . SIMPLA_ADMIN_DIR;
 		
 	}
 	
@@ -79,7 +80,7 @@ class installer_vqinstaller extends vqInstaller {
 	*/
 	public function exec($manifest, $action_name){
 		
-		$manifest_path = MOD_DIR . $manifest;
+		$manifest_path = $this->mod->directory . $manifest;
 	
 		if(!file_exists($manifest_path))
 			return $this->set_error('EXEC: FILE NOT FOUND: ' . $manifest_path);
@@ -155,19 +156,24 @@ class installer_vqinstaller extends vqInstaller {
 	* @param string $sql sql query
 	* @return null
 	*/
-	public function query($sql){
+	public function query(){
 		
-		$sql = $this->db->placehold(trim($sql));
-		$this->db->query($sql);
+		$args = func_get_args();
+		$sql = trim(call_user_func_array(array($this->db, 'placehold'), $args));		
+		$q = $this->db->query($sql);
 		
 		if(strlen($sql)>150)
 			$sql_log = $sql . PHP_EOL;
 		else
 			$sql_log = implode(' ', array_map('trim', explode("\n", $sql)));
 
-		$this->set_message('SQL QUERY: ' . $sql_log);
-
-		$this->add_counter('query');
+		if($q){
+			$this->set_message('SQL QUERY: ' . $sql_log);
+			$this->add_counter('query');
+		}else
+			$this->set_error('SQL QUERY ERROR: ' . $sql_log);
+		
+		
 	}
 
 	/* Delete file
@@ -257,10 +263,10 @@ class installer_vqinstaller extends vqInstaller {
 	*/
 	public function rename($source, $dest){
 		
-		$file = $this->prepare_path($file);
-		$src = $this->prepare_path($dest);
+		$dest = $this->prepare_path($dest);
+		$source = $this->prepare_path($source);
 	
-		return $this->_rename($src, $dest);
+		return $this->_rename($source, $dest);
 	}
 	
 	
@@ -324,7 +330,7 @@ class installer_vqinstaller extends vqInstaller {
 	*/
 	public function set_error($error_str) {
 		$this->errors[$this->_index_event] = $error_str;
-		$this->logger->write($error_str);
+		$this->mod->log($error_str);
 		$this->_index_event += 1;
 	}	
 	
@@ -336,7 +342,7 @@ class installer_vqinstaller extends vqInstaller {
 	*/
 	public function set_message($message_str) {
 		$this->messages[$this->_index_event] = $message_str;
-		$this->logger->write($message_str);
+		$this->mod->log($message_str);
 		$this->_index_event += 1;
 	}	
 	
@@ -763,7 +769,7 @@ class installer_vqinstaller extends vqInstaller {
 				$this->set_error('RENAME: CAN\'T RENAME "/' . $source . '" TO "/' . $dest . '"');
 		}
 		
-		return false;
+		return $result;
 	}
 	
 	private function _apply_patch($patch_file, $patches){

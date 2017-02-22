@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <id>SIMPLE RESIZE</id>
+    <version>1.0</version>
+    <vqmver required="true">2.6.0</vqmver>
+    <author>Polevik Yurii</author>
+
+	
+<!-- RESIZE -->
+	<file name="resize/resize.php">
+		<operation error="log" info="Delete check_token">
+            <search position="before" index="1"><![CDATA[$token]]></search>
+            <add><![CDATA[$type = $_GET['type'];
+/*]]></add>
+        </operation>			
+		<operation error="log" info="End delete check_token">
+            <search position="after"><![CDATA[image->resize]]></search>
+            <add><![CDATA[*/
+$simpla = new Simpla();
+$resized_filename =  $simpla->image->resize($filename, $type);
+			]]></add>
+        </operation>	
+	</file>
+<!-- RESIZE -->
+	
+	
+<!-- DESIGN FUNCTION -->
+	<file name="api/Design.php">
+		<operation error="log" info="">
+            <search position="before"><![CDATA[public function resize_modifier]]></search>
+            <add><![CDATA[/*]]></add>
+        </operation>				
+		
+		<operation error="log" info="">
+            <search position="after" offset="1"><![CDATA[token($resized_filename)]]></search>
+            <add><![CDATA[*/
+	public function resize_modifier($filename, $width=0, $height=0, $set_watermark=false, $type='products')
+	{
+		$config_var = $type.'_images_dir';
+		if(!$this->config->$config_var)
+			return false;
+
+		$resized_filename = $this->image->add_resize_params($filename, $width, $height, $set_watermark, $type);
+
+		if(substr($resized_filename, 0, 7) == 'http://')
+			$resized_filename = rawurlencode($resized_filename);
+
+		$resized_filename = rawurlencode($resized_filename);
+
+		return $this->config->root_url.'/'.$this->config->resized_dir.$type.'/'.$resized_filename;
+	}
+	
+			]]></add>
+        </operation>		
+	</file>
+<!-- DESIGN FUNCTION -->
+
+
+<!-- IMAGE FUNCTIONS -->
+	<file name="api/Image.php">
+		<operation error="log" info="">
+            <search position="after" offset="1"><![CDATA[class Image]]></search>
+            <add><![CDATA[
+	protected $allowed_sizes = array();
+	protected $sizes_cache_file = 'sizes.txt';
+			]]></add>
+        </operation>				
+
+		
+		<operation error="log" info="Change function resize">
+            <search position="replace" offset="3"><![CDATA[function resize($filename)]]></search>
+            <add><![CDATA[function resize($filename, $type='products')
+	{
+		$config_var = $type.'_images_dir';
+		if(!$this->config->$config_var)
+			return false;
+			
+		list($source_file, $width , $height, $set_watermark) = $this->get_resize_params($filename);
+		
+		//Проверяем разрешенные размеры
+		$params_key = $width.'x'.$height.($set_watermark ? 'w':'');
+		if(!$this->is_allowed_size($type, $params_key))
+			return false;
+			
+			]]></add>
+        </operation>				
+		
+		<operation error="log" info="Change function resize">
+            <search position="replace" offset="2"><![CDATA[// Пути к папкам с картинками]]></search>
+            <add><![CDATA[// Пути к папкам с картинками
+		$preview_dir = $this->config->root_dir.$this->config->resized_dir.$type.'/';
+
+		$config_var = $type.'_images_dir';
+		$originals_dir = $this->config->root_dir.$this->config->$config_var;
+]]></add>
+        </operation>		
+		
+
+		<operation error="log" info="Add new functions">
+            <search position="before"><![CDATA[function download_image]]></search>
+            <add><![CDATA[
+	private function is_allowed_size($type, $size_key, $else_insert=false){
+		
+		$sizes_cache_file = $this->config->root_dir.$this->config->resized_dir.$type.'/'.$this->sizes_cache_file;
+		if(!isset($this->allowed_sizes[$type])){
+			$this->allowed_sizes[$type] = array();
+			if(file_exists($sizes_cache_file) && ($sizes=file_get_contents($sizes_cache_file)))
+				$this->allowed_sizes[$type] = unserialize($sizes);
+		}
+		
+		$allowed =  in_array($size_key, $this->allowed_sizes[$type]);
+		if(!$allowed && $else_insert){
+			if(!is_dir(dirname($sizes_cache_file)))
+				mkdir(dirname($sizes_cache_file), 0777, true);
+		
+			$this->allowed_sizes[$type][] = $size_key;
+			file_put_contents($sizes_cache_file, serialize($this->allowed_sizes[$type]));
+		}
+		return $allowed;
+	}
+			]]></add>
+        </operation>		
+		
+		<operation error="log" info="Add token checks">
+            <search position="replace" offset="1"><![CDATA[$set_watermark=false)]]></search>
+            <add><![CDATA[$set_watermark=false, $type='products')
+	{
+		$params_key = $width.'x'.$height.($set_watermark ? 'w':'');
+		$this->is_allowed_size($type, $params_key, true);]]></add>
+        </operation>
+	</file>		
+<!-- IMAGE FUNCTIONS -->
+
+<!-- CHANGE CONFIG VARIBLES -->
+	<file name="api/Image.php,api/Products.php,simpla/cml/1c_exchange.php">
+		<operation error="log" info="Change config vars">
+            <search position="replace"><![CDATA[config->original_images_dir]]></search>
+            <add><![CDATA[config->products_images_dir]]></add>
+        </operation>				
+		<operation error="log" info="Change config vars">
+            <search position="replace"><![CDATA[config->resized_images_dir]]></search>
+            <add><![CDATA[config->resized_dir]]></add>
+        </operation>		
+	</file>	
+<!-- CHANGE CONFIG VARIBLES -->
+
+
+<!-- CHANGE CLEAN RESIZE -->
+	<file name="simpla/SettingsAdmin.php">	
+		<operation error="log" info="Change config vars">
+            <search position="replace"><![CDATA[$dir = $this->config->resized_images_dir]]></search>
+            <add><![CDATA[foreach(glob($this->config->root_dir.$this->config->resized_dir.'*', GLOB_ONLYDIR) as $dir)]]></add>
+        </operation>		
+	</file>	
+<!-- CHANGE CLEAN RESIZE -->
+
+<!-- CHANGE BACKUP IGNORE DIR -->
+	<file name="simpla/BackupAdmin.php">	
+		<operation error="log" info="">
+            <search position="replace"><![CDATA[files\/products]]></search>
+            <add><![CDATA[files\/resize]]></add>
+        </operation>		
+	</file>	
+<!-- CHANGE BACKUP IGNORE DIR -->
+
+
+</modification>

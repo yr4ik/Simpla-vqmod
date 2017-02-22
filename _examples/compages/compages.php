@@ -1,115 +1,151 @@
 <?php
 
-/**
- *
- * @Simpla comments page Install/Uninstal Script
- * @author Polevik Yurii 2016 - https://vk.com/polevik_yuriy
- *
- */
+/*
+*	@ name: ComPages
+*	@ version: 1.1
+*	@ description: Возможность оставлять комментарии к страницам
+*	@ author: Polevik Yurii
+*	@ author_url: http://vk.com/polevik_yuriy
+*/
+
 
 
 class compages extends vqInstaller {
 	
-	private $resources = array(
-		'compages.xml' => 'vqmod/xml/compages.xml'
-	);
-	
-	
-	private function fetch($result){
-		return '<h1>Комментарии к страницам v.1.0</h1>
-		' . nl2br($result) . '<br><br>
-		<input type="button" onclick="window.location=\''.$this->config->root_url.'\'" value="Перейти на сайт">';
-	}
-	
-	
-	private function get_comments_types(){
-		
-		$types = array();
+	protected $types = null;
+
+	public function __construct(){
 		
 		$this->db->query("SHOW COLUMNS FROM __comments LIKE ?", 'type');
 		$enum = $this->db->result('Type');
 		
 		if($enum && preg_match_all('~\'([^\']*)\'~', $enum, $matches)){
 			foreach($matches[1] as $match)
-				$types[$match] = $match;
+				$this->types[$match] = $match;
 		}
-		return $types;
+		
+		if(!$this->types)
+			throw new Exception('Ошибка работы с базой данных', 41);
+	
+		
+		$this->form->addElement(new Element_HTML('<legend>'.$this->mod->name . ' ' . $this->mod->version . '</legend>'));
 	}
 	
+
 	public function install(){
-		$message = '';
-		$types = $this->get_comments_types();
-		
-		if(!$types)
-			$message .= 'Ошибка работы с базой данных';
-		elseif(isset($types['page']))
-			$message .= 'Модуль уже установлен';
-		else{
-			$types['page'] = 'page';
-			$this->db->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $types);
-			$this->db->query("ALTER TABLE __pages ADD allow_comment INT( 1 ) NOT NULL DEFAULT ?", '0');
-				
-			if(!empty($this->resources)){
 
-				foreach($this->resources as $resource_file => $resource_path){
-					
-					if(file_exists(ROOT_DIR.$resource_path))
-						unlink(ROOT_DIR.$resource_path);
+		if(isset($this->types['page']))
+			throw new Exception('Модуль уже установлен', 42);
+	
+		if(!$this->is_confirmed()){
+			
+			$this->form->addElement(new Element_HTML('<p>Данный модуль оставлять комментарии к страницам</p>
+			<p>Установить?</p>'));
+			
+			$this->form->addElement(new Element_Hidden('confirmed', 'yes'));
+			$this->form->addElement(new Element_Button('Да', 'submit'));
+			
+			$this->form->addElement(new Element_Button('Отмена', 'button', array(
+				'class' => 'btn-default',
+				'onclick' => "window.location='/'"
+			)));
 
-					if(!is_dir(dirname(ROOT_DIR.$resource_path)))
-						mkdir(dirname(ROOT_DIR.$resource_path), 0755, true);
-					
-					$copy_result = (copy(dirname(__FILE__).'/'.$resource_file, ROOT_DIR.$resource_path) ? 1:0);
 
-					if($copy_result)
-						$message .= "/{$resource_path} was installed\n";
-					else
-						$message .= "<font color=\"red\">/{$resource_path} can't installed</font>\n";
-				}
-			}
+		}else{
+
+			$this->types['page'] = 'page';
+			$this->installer->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $this->types);
+			$this->installer->query("ALTER TABLE __pages ADD allow_comment INT( 1 ) NOT NULL DEFAULT ?", '0');
+
+			
+			$this->installer->copy_file('[MOD]/compages.xml', 'vqmod/xml/compages.xml', true);
+			
+
+			$counters = $this->installer->get_counter();
+
+			$result_log = "<p>Выполнено {$counters->query} sql к базе данных</p>";
+			$result_log .= "<p>Установлено {$counters->copied} файлов</p>";
 			
 			
-			$message .= "<font color=\"green\">Модуль установлен</font>";
+			foreach($this->installer->get_results('errors') as $error)
+				$result_log .= "<div class=\"alert alert-danger\">{$error}</div>";
+
+			$result_log .= "<div class=\"alert alert-success\">Модуль установлен</div>";
+			
+			$this->form->addElement(new Element_HTML($result_log));
+
+			$this->form->addElement(new Element_Button('Перейти на сайт', 'button', array(
+				'class' => 'btn-default',
+				'onclick' => "window.location='/'"
+			)));
+			
+			$this->mod->status = 'installed';
 		}
-		return $this->fetch($message);
+
+		return $this->form->render(true);
 	}
 	
 	
 	public function uninstall(){
-		$message = '';
-		$types = $this->get_comments_types();
+
+
+		if(!isset($this->types['page']))
+			throw new Exception('Модуль не установлен', 42);
 		
-		if(!$types)
-			$message .= 'Ошибка работы с базой данных';
-		elseif(!isset($types['page']))
-			$message .= 'Модуль не установлен';
-		else{
-			unset($types['page']);
-			$this->db->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $types);
-			$this->db->query("ALTER TABLE __pages DROP allow_comment");
+		if(!$this->is_confirmed()){
 			
-			if(!empty($this->resources)){
-				foreach($this->resources as $resource_file => $resource_path){
-					
-					$delete = true;
-					if(file_exists(ROOT_DIR.$resource_path))
-						$delete = unlink(ROOT_DIR.$resource_path);
+			$this->form->addElement(new Element_HTML('<p>Вы подтверждаете удаление?</p>'));
 
-					if($delete)
-						$message .= "/{$resource_path} was deleted\n";
-					else
-						$message .= "<font color=\"red\">/{$resource_path} can't delete</font>\n";
-
-				}
-			}
+			$this->form->addElement(new Element_Hidden('confirmed', 'yes'));
+			$this->form->addElement(new Element_Button('Удалить', 'submit'));
 			
-			$message .= "\n<font color=\"green\">Модуль удален</font>";
+			$this->form->addElement(new Element_Button('Отмена', 'button', array(
+				'class' => 'btn-default',
+				'onclick' => "window.location='/'"
+			)));
+
+		}else{
+
+			unset($this->types['page']);
+			$this->installer->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $this->types);
+			$this->installer->query("ALTER TABLE __pages DROP allow_comment");
+
+			$this->installer->delete_file('vqmod/xml/compages.xml');
+
+			$counters = $this->installer->get_counter();
+			
+			$result_log = "<p>Выполнено {$counters->query} sql к базе данных</p>";
+			$result_log .= "<p>Удалено {$counters->deleted_file} файлов</p>";
+									
+			foreach($this->installer->get_results('errors') as $error)
+				$result_log .= "<div class=\"alert alert-danger\">{$error}</div>";
+
+			$result_log .= "<div class=\"alert alert-success\">Модуль удален</div>";
+			
+			$this->form->addElement(new Element_HTML($result_log));
+			
+			$this->form->addElement(new Element_Button('Перейти на сайт', 'button', array(
+				'class' => 'btn-default',
+				'onclick' => "window.location='/'"
+			)));
+			
+			$this->mod->status = 'uninstalled';
+			
 		}
-		return $this->fetch($message);
+
+
+		return $this->form->render(true);
 	}
+	
 
+
+	private function is_confirmed(){
+		return $this->request->post('confirmed', 'boolean');
+	}	
+	
+
+	 
 }
-
 
 
 

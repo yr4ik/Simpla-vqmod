@@ -240,7 +240,7 @@ abstract class VQMod {
 			foreach(glob($xml_dir . '[!_]*.xml') as $xml)
 				$xml_files[] = $xml;
 		}
-
+	
 		return $xml_files;
 	}
 
