@@ -45,11 +45,8 @@ class installer_vqinstaller extends vqInstaller {
 	
 	protected $disabled_delete_dirs = array(
 		'', // root
-		'api',
 		'ajax',
 		'config',
-		'files',
-		'view',
 		'payment',
 		'vqmod',
 		'vqmod/xml',
@@ -59,13 +56,15 @@ class installer_vqinstaller extends vqInstaller {
 	
 	public function __construct(){
 		
+		$this->disabled_delete_dirs[] = SIMPLA_API_DIR;
 		$this->disabled_delete_dirs[] = SIMPLA_DESIGN_DIR;
+		$this->disabled_delete_dirs[] = SIMPLA_FILES_DIR;
+		$this->disabled_delete_dirs[] = SIMPLA_VIEW_DIR;
 		$this->disabled_delete_dirs[] = SIMPLA_ADMIN_DIR;
 		$this->disabled_delete_dirs[] = SIMPLA_ADMIN_DIR.'/ajax';
 		$this->disabled_delete_dirs[] = SIMPLA_ADMIN_DIR.'/design';
 
 		$this->shortcuts['[MOD]'] = substr($this->mod->directory, 0, -1);
-		
 		$this->shortcuts['[ADMIN]'] =  ROOT_DIR . SIMPLA_ADMIN_DIR;
 		
 	}
@@ -109,7 +108,8 @@ class installer_vqinstaller extends vqInstaller {
 					$nodeName = strtoupper((string) $action->nodeName);
 					
 					if(!isset($this->xml_actions[$nodeName])){
-						$this->set_error('EXEC: UNSUPPORTED ACTION <' . $nodeName . '>');
+						if($nodeName != '#COMMENT')
+							$this->set_error('EXEC: UNSUPPORTED ACTION <' . $nodeName . '>');
 						continue;
 					}
 					
@@ -149,32 +149,6 @@ class installer_vqinstaller extends vqInstaller {
 	}
 	
 	
-	
-	/* Make SQL query to database
-	* query(string $sql);
-	*
-	* @param string $sql sql query
-	* @return null
-	*/
-	public function query(){
-		
-		$args = func_get_args();
-		$sql = trim(call_user_func_array(array($this->db, 'placehold'), $args));		
-		$q = $this->db->query($sql);
-		
-		if(strlen($sql)>150)
-			$sql_log = $sql . PHP_EOL;
-		else
-			$sql_log = implode(' ', array_map('trim', explode("\n", $sql)));
-
-		if($q){
-			$this->set_message('SQL QUERY: ' . $sql_log);
-			$this->add_counter('query');
-		}else
-			$this->set_error('SQL QUERY ERROR: ' . $sql_log);
-		
-		
-	}
 
 	/* Delete file
 	* delete_file(string $path);
@@ -346,6 +320,18 @@ class installer_vqinstaller extends vqInstaller {
 		$this->_index_event += 1;
 	}	
 	
+	/* Add value to counter
+	* add_counter(string $counter, (int) $added=1)
+	*
+	* @param string $counter string counter name
+	* @param int value of count
+	* @return null
+	*/
+	public function add_counter($counter, $added=1) {
+		$this->counters[$counter] += $added;
+	}
+	
+	
 	/* Get results messages
 	* get_results(string $log_type=null);
 	*
@@ -391,7 +377,7 @@ class installer_vqinstaller extends vqInstaller {
 	* content: sql
 	*/
 	private function xml_sql_action($action, $attributes, $content){
-		$this->query($content);
+		$this->db->query($content);
 	}	
 	
 	
@@ -588,11 +574,6 @@ class installer_vqinstaller extends vqInstaller {
 		return preg_replace_callback('~\[(CFG|CONST):(\w+)(?:\:(regex|html))?\]~', array($this, 'replace_shortcuts_callback'), $string);
 	}
 	
-
-	protected function add_counter($counter, $added=1) {
-		$this->counters[$counter] += $added;
-	}
-
 	
 	protected function is_true($value) {	
 		return filter_var($value, FILTER_VALIDATE_BOOLEAN);

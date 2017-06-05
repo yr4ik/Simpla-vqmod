@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
     <id>Комментарии к страницам</id>
-    <version>1.0</version>
+    <version>1.3</version>
     <vqmver required="true">2.6.0</vqmver>
     <author>Polevik Yurii</author>
 
@@ -15,13 +15,12 @@
             <add><![CDATA[WHERE 1 $comments_filter]]></add>
         </operation>
 		<operation error="skip" info="">
-            <search position="after"><![CDATA[$visible_filter = '';]]></search>
-            <add><![CDATA[$comments_filter = '';]]></add>
-        </operation>
-		<operation error="skip" info="">
             <search position="after" offset="2"><![CDATA[if(isset($filter['visible']))]]></search>
-            <add><![CDATA[if(isset($filter['allow_comment']))
-			$comments_filter = $this->db->placehold('AND allow_comment = ?', intval($filter['allow_comment']));]]></add>
+            <add><![CDATA[#ComPages
+		$comments_filter = '';
+		if(isset($filter['allow_comment']))
+			$comments_filter = $this->db->placehold('AND allow_comment = ?', intval($filter['allow_comment']));
+#ComPages]]></add>
         </operation>
 	</file>
 
@@ -29,13 +28,16 @@
 	<file name="simpla/PageAdmin.php">
 		<operation error="skip" info="">
             <search position="after"><![CDATA[post('visible']]></search>
-            <add><![CDATA[$page->allow_comment = $this->request->post('allow_comment', 'boolean');]]></add>
+            <add><![CDATA[#ComPages
+			$page->allow_comment = $this->request->post('allow_comment', 'boolean');
+#ComPages]]></add>
         </operation>
 	</file>	
 	<file name="simpla/CommentsAdmin.php">
 		<operation error="skip" info="">
             <search position="replace" offset="23"><![CDATA[$products_ids = array();]]></search>
             <add><![CDATA[
+#ComPages
   	$object_ids = array();
   	foreach($comments as $comment)
 		$object_ids[$comment->type][] = $comment->object_id;
@@ -69,7 +71,7 @@
 				$comment->{$comment->type} = $data_object[$comment->type][$comment->object_id];
 		}
 	}
-			]]></add>
+#ComPages]]></add>
         </operation>
 	</file>
 	<file name="simpla/design/html/comments.tpl">

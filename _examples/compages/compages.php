@@ -2,7 +2,7 @@
 
 /*
 *	@ name: ComPages
-*	@ version: 1.1
+*	@ version: 1.3
 *	@ description: Возможность оставлять комментарии к страницам
 *	@ author: Polevik Yurii
 *	@ author_url: http://vk.com/polevik_yuriy
@@ -54,8 +54,8 @@ class compages extends vqInstaller {
 		}else{
 
 			$this->types['page'] = 'page';
-			$this->installer->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $this->types);
-			$this->installer->query("ALTER TABLE __pages ADD allow_comment INT( 1 ) NOT NULL DEFAULT ?", '0');
+			$this->db->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $this->types);
+			$this->db->query("ALTER TABLE __pages ADD allow_comment INT( 1 ) NOT NULL DEFAULT ?", '0');
 
 			
 			$this->installer->copy_file('[MOD]/compages.xml', 'vqmod/xml/compages.xml', true);
@@ -107,8 +107,8 @@ class compages extends vqInstaller {
 		}else{
 
 			unset($this->types['page']);
-			$this->installer->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $this->types);
-			$this->installer->query("ALTER TABLE __pages DROP allow_comment");
+			$this->db->query("ALTER TABLE __comments CHANGE type type ENUM(?@) NOT NULL", $this->types);
+			$this->db->query("ALTER TABLE __pages DROP allow_comment");
 
 			$this->installer->delete_file('vqmod/xml/compages.xml');
 
