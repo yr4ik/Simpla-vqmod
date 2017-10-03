@@ -2,7 +2,7 @@
 
 /*
 	@ name: vQmod for Simpla CMS
-	@ version: 2.6
+	@ version: 2.7
 	@ description: Установочный компонент vqmod
 	@ author: Polevik Yurii
 	@ author_url: http://vk.com/polevik_yuriy
@@ -21,7 +21,7 @@ class vqmod_control extends vqInstaller {
 		if(!is_writeable(ROOT_DIR . '.htaccess'))
 			$_errors[] = '.htaccess not writeable';
 
-		if(!is_writeable(ROOT_DIR . '/config/config.php'))
+		if(!is_writeable(ROOT_DIR . 'config/config.php'))
 			$_errors[] = 'config/config.php not writeable';
 
 		if(version_compare(PHP_VERSION, '5.1.2', '<'))
@@ -68,7 +68,7 @@ class vqmod_control extends vqInstaller {
 			$patches = array(			
 				/* .htaccess CHANGE */
 				'.htaccess' => array(
-					'~RewriteEngine on[\s$]+((?!'.preg_quote(VQMOD_OPEN).')(#|Rewrite))~mi' =>
+					'~RewriteEngine on[\s$]+((?!'.preg_quote(VQMOD_OPEN).')(#|Rewrite|<))~mi' =>
 							"RewriteEngine on\n\n".
 							VQMOD_OPEN . "\n".
 							
@@ -79,9 +79,9 @@ class vqmod_control extends vqInstaller {
 							//Cath css and js
 							"RewriteRule ^(js|design)/(.*)\.(js|css)$ {$this->resources[0]['dest']} [L]\n".
 							//Cath view modules
-							"RewriteRule ^(index|yandex|sitemap|ajax/([\w-\.]+)|payment/\w+/callback|resize/resize)\.php$ {$this->resources[2]['dest']}?VQLOAD=%{REQUEST_FILENAME} [QSA,L]\n".
+							"RewriteRule ^(index|yandex|sitemap|ajax/([\w-\.]+)|payment/\w+/callback|resize/resize)\.php$ {$this->resources[2]['dest']}?VQLOAD=\\$0 [QSA,L]\n".
 							//Cath admin protected modules
-							"RewriteRule ^" . SIMPLA_ADMIN_DIR . "/(index|ajax(/stats)?/([\w-\.]+)|cml/1c_exchange)\.php$ {$this->resources[3]['dest']}?VQLOAD=%{REQUEST_FILENAME} [QSA,L]\n".
+							"RewriteRule ^" . SIMPLA_ADMIN_DIR . "/(index|ajax(/stats)?/([\w-\.]+)|cml/1c_exchange)\.php$ {$this->resources[3]['dest']}?VQLOAD=\\$0 [QSA,L]\n".
 							VQMOD_CLOSE . "\n\n\\2"
 				),
 				/* config/config.php CHANGE */

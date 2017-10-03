@@ -41,29 +41,36 @@
 		<operation error="log" info="Fix subdir">
             <search position="replace"><![CDATA[realpath(dirname(dirname(__FILE__)))]]></search>
             <add><![CDATA[VQMod::getCwd()]]></add>
+        </operation>		
+		<operation error="log" info="Fix subdir">
+            <search position="after"><![CDATA[$this->vars['root_dir'] =]]></search>
+            <add><![CDATA[#VQMOD
+		$this->vars['is_admin'] = (defined('VQMOD_LOADER') && VQMOD_LOADER=='BACKEND');
+#VQMOD]]></add>
         </operation>
 	</file>
 	
 	<file name="api/Design.php">
 		<operation error="log" info="Replace pathes to inlude smarty and Simpla.php">
             <search position="replace" offset="1"><![CDATA[require_once(dirname(__FILE__).'/'.'Simpla.php');]]></search>
-            <add><![CDATA[
-				require_once(VQMod::getCwd().'Smarty/libs/Smarty.class.php');
-				class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File  {
-					protected function buildFilepath(Smarty_Template_Source $source, Smarty_Internal_Template $_template=null)
-					{
-						$filepath = parent::buildFilepath($source, $_template);
-						return VQMod::modCheck($filepath);
-					}
-				}
-			]]></add>
+            <add><![CDATA[#VQMOD
+require_once(VQMod::getCwd().'Smarty/libs/Smarty.class.php');
+class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File  {
+	protected function buildFilepath(Smarty_Template_Source $source, Smarty_Internal_Template $_template=null)
+	{
+		$filepath = parent::buildFilepath($source, $_template);
+		return VQMod::modCheck($filepath);
+	}
+}
+#VQMOD]]></add>
         </operation>
 		<operation error="log" info="Add smarty resource">
             <search position="after"><![CDATA[$this->smarty = new Smarty();]]></search>
-            <add><![CDATA[
-				$this->smarty->default_resource_type = 'simpla';
-				$this->smarty->registerResource('simpla', new Simpla_Smarty_Resource());
-			]]></add>
+            <add><![CDATA[#VQMOD
+		$this->smarty->default_resource_type = 'simpla';
+		$this->smarty->registerResource('simpla', new Simpla_Smarty_Resource());
+		$this->smarty->assign('simpla', $this);
+#VQMOD]]></add>
         </operation>
 	</file>	
 	
@@ -129,7 +136,7 @@
         </operation>
 		<operation error="log" info="Add set theme function">
             <search position="before"><![CDATA[private function get_themes()]]></search>
-            <add><![CDATA[
+            <add><![CDATA[#VQMOD
 	private function set_theme($theme){
 	
 		$xmlDirs = array();
@@ -145,7 +152,7 @@
 		$this->settings->theme = $theme;
 	}
 	
-	]]></add>
+#VQMOD]]></add>
         </operation>		
 	</file>
 	<!-- SIMPLA END -->
