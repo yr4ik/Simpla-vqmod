@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
     <id>VQMOD_CORE_SIMPLACMS</id>
-    <version>2.3</version>
+    <version>2.7.1</version>
     <vqmver required="true">2.6.0</vqmver>
     <author>Polevik Yurii</author>
 
@@ -45,7 +45,7 @@
 		<operation error="log" info="Fix subdir">
             <search position="after"><![CDATA[$this->vars['root_dir'] =]]></search>
             <add><![CDATA[#VQMOD
-		$this->vars['is_admin'] = (defined('VQMOD_LOADER') && VQMOD_LOADER=='BACKEND');
+		$this->vars['is_backend'] = (defined('VQMOD_LOADER') && VQMOD_LOADER=='BACKEND');
 #VQMOD]]></add>
         </operation>
 	</file>
@@ -55,21 +55,29 @@
             <search position="replace" offset="1"><![CDATA[require_once(dirname(__FILE__).'/'.'Simpla.php');]]></search>
             <add><![CDATA[#VQMOD
 require_once(VQMod::getCwd().'Smarty/libs/Smarty.class.php');
-class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File  {
+class Simpla_Smarty_Resource extends  Smarty_Internal_Resource_File
+{
+	public $loaded_resources = array();
+	
 	protected function buildFilepath(Smarty_Template_Source $source, Smarty_Internal_Template $_template=null)
 	{
-		$filepath = parent::buildFilepath($source, $_template);
-		return VQMod::modCheck($filepath);
+		if($_template->template_resource && !in_array($_template->template_resource, $this->loaded_resources))
+			$this->loaded_resources[] = $_template->template_resource;
+		return VQMod::modCheck(parent::buildFilepath($source, $_template));
 	}
+	
 }
 #VQMOD]]></add>
         </operation>
 		<operation error="log" info="Add smarty resource">
             <search position="after"><![CDATA[$this->smarty = new Smarty();]]></search>
             <add><![CDATA[#VQMOD
+		$simpla_resource = new Simpla_Smarty_Resource();
 		$this->smarty->default_resource_type = 'simpla';
-		$this->smarty->registerResource('simpla', new Simpla_Smarty_Resource());
+		$this->smarty->registerResource('simpla', $simpla_resource);
+		
 		$this->smarty->assign('simpla', $this);
+		$this->smarty->assignByRef('included_tpls', $simpla_resource->loaded_resources);
 #VQMOD]]></add>
         </operation>
 	</file>	

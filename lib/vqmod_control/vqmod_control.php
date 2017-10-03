@@ -2,7 +2,7 @@
 
 /*
 	@ name: vQmod for Simpla CMS
-	@ version: 2.7
+	@ version: 2.7.1
 	@ description: Установочный компонент vqmod
 	@ author: Polevik Yurii
 	@ author_url: http://vk.com/polevik_yuriy
