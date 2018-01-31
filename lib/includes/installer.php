@@ -635,14 +635,15 @@ class installer_vqinstaller extends vqInstaller {
 		$full_path = ROOT_DIR . $path;
 		
 		$dir_deleted = !is_dir($full_path);
-		if(!$dir_deleted){
-
-			if(!in_array(strtolower($path), $this->disabled_delete_dirs)){
-
+		if(!$dir_deleted)
+		{
+			if(!in_array(strtolower($path), $this->disabled_delete_dirs))
+			{
 				if(!$dh = @opendir($full_path)) 
 					return false; 
 				
-				while (false !== ($obj = readdir($dh))){ 
+				while (false !== ($obj = readdir($dh)))
+				{ 
 					if($obj == '.' || $obj == '..') 
 						continue; 
 			
@@ -655,7 +656,8 @@ class installer_vqinstaller extends vqInstaller {
 				
 				$dir_deleted = @rmdir($full_path);
 
-				if($dir_deleted){
+				if($dir_deleted)
+				{
 					$this->add_counter('deleted_dir');
 					$this->set_message('DELETE DIR: "/' . $path . '"');
 				}else
@@ -699,22 +701,22 @@ class installer_vqinstaller extends vqInstaller {
 	
 	
 	
-	private function _recurse_copy($source, $dest, $replace_file=false){
-
-		if(is_file(ROOT_DIR . $source)){
-			
+	private function _recurse_copy($source, $dest, $replace_file=false)
+	{
+		if(is_file(ROOT_DIR . $source))
+		{
 			return $this->_copy_file($source, $dest, $replace_file);
-			
-		}elseif(is_dir(ROOT_DIR . $source)){
-
+		}
+		elseif(is_dir(ROOT_DIR . $source))
+		{
 			$this->_new_dir($dest);
 		
 			$dir = dir(ROOT_DIR . $source);
 			
 			if($dest) $dest .= '/';
 			
-			while (false !== $entry = $dir->read()) {
-				
+			while (false !== $entry = $dir->read())
+			{
 				if ($entry == '.' || $entry == '..')
 					continue;
 
@@ -731,19 +733,27 @@ class installer_vqinstaller extends vqInstaller {
 	}
 	
 	
-	private function _rename($source, $dest){
-		
+	private function _rename($source, $dest)
+	{
 		$result = false;
 		
-		if(!$source){
+		if(!$source)
+		{
 			$this->set_error('RENAME: CAN\'T RENAME ROOT DIRECTORY');
-		}elseif(!file_exists(ROOT_DIR . $source)){
+		}
+		elseif(!file_exists(ROOT_DIR . $source))
+		{
 			$this->set_error('RENAME: SOURCE "/' . $source . '" IS NOT EXIST');
-		}elseif(file_exists(ROOT_DIR . $dest)){
+		}
+		elseif(file_exists(ROOT_DIR . $dest))
+		{
 			$this->set_error('RENAME: DEST "/' . $dest . '" WAS EXIST');
-		}else{
+		}
+		else
+		{
 			$result = @rename(ROOT_DIR . $source, ROOT_DIR . $dest);
-			if($result){
+			if($result)
+			{
 				$this->add_counter('renamed');
 				$this->set_message('RENAME: "/' . $source . '" WAS  RENAMED TO "/' . $dest . '"');
 			}else
@@ -753,12 +763,11 @@ class installer_vqinstaller extends vqInstaller {
 		return $result;
 	}
 	
-	private function _apply_patch($patch_file, $patches){
-
+	private function _apply_patch($patch_file, $patches)
+	{
 		$result = false;
-	
-		if(file_exists(ROOT_DIR . $patch_file)){
-
+		if(file_exists(ROOT_DIR . $patch_file))
+		{
 			$this->ugrsr->addFile($patch_file);
 			
 			foreach($patches as $regex => $replace)
@@ -766,11 +775,16 @@ class installer_vqinstaller extends vqInstaller {
 
 			$result = (object) $this->ugrsr->run();
 
-			if(!$result->writes){
+			if(!$result->writes)
+			{
 				$this->set_error('PATCH: CAN\'T WRITE "/' . $patch_file . '"');
-			}elseif(!$result->changes){
+			}
+			elseif(!$result->changes)
+			{
 				$this->set_error('PATCH: CAN\'T WRITE CHANGES TO "/' . $patch_file . '"');
-			}else{
+			}
+			else
+			{
 				
 				$this->add_counter('writes', $result->writes);
 				$this->add_counter('changes', $result->changes);
@@ -787,15 +801,14 @@ class installer_vqinstaller extends vqInstaller {
 	}
 	
 	
-	private function _chmod($path, $mode){
-		
+	private function _chmod($path, $mode)
+	{
 		$result = false;
-
-		if(file_exists(ROOT_DIR . $path)){
-		
+		if(file_exists(ROOT_DIR . $path))
+		{
 			$result = @chmod(ROOT_DIR . $path, $mode);
-
-			if($result){
+			if($result)
+			{
 				$this->add_counter('permission');
 				$this->set_message('CHMOD: "/' . $path . '" SET MODE [0' . decoct($mode) . '] ');
 			}else

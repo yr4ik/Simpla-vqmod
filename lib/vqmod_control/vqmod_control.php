@@ -2,30 +2,33 @@
 
 /*
 	@ name: vQmod for Simpla CMS
-	@ version: 2.7.1
+	@ version: 2.8
 	@ description: Установочный компонент vqmod
 	@ author: Polevik Yurii
 	@ author_url: http://vk.com/polevik_yuriy
 */
 
 
-class vqmod_control extends vqInstaller {
+class vqmod_control extends vqInstaller 
+{
 
 	private $resources = array();
 	
-
-	public function __construct(){
-		
+	public function __construct()
+	{
 		// Verify path is correct
 		$_errors = array();
 		if(!is_writeable(ROOT_DIR . '.htaccess'))
 			$_errors[] = '.htaccess not writeable';
+		
+		if(!is_writeable(ROOT_DIR . SIMPLA_DESIGN_DIR . '/.htaccess'))
+			$_errors[] = SIMPLA_DESIGN_DIR.'/.htaccess not writeable';
 
 		if(!is_writeable(ROOT_DIR . 'config/config.php'))
 			$_errors[] = 'config/config.php not writeable';
 
-		if(version_compare(PHP_VERSION, '5.1.2', '<'))
-			$_errors[] = 'Need php version 5.1.2 or higher';
+		if(version_compare(PHP_VERSION, '5.3.0', '<'))
+			$_errors[] = 'Need php version 5.3.0 or higher';
 		
 		if(!class_exists("DOMDocument"))
 			$_errors[] = 'DOMDocument extension needs to be loaded for work';		
@@ -36,10 +39,10 @@ class vqmod_control extends vqInstaller {
 		
 		
 		$this->resources = array(
-			array('src' => '[MOD]/resources/minify.php', 'dest' => 'resize/minify.php'),
-			array('src' => '[MOD]/resources/jsmin.php', 'dest'  => 'resize/jsmin.php'),
-			array('src' => '[MOD]/resources/vqmod_loader.php', 'dest'  => 'vqmod_loader.php'),
-			array('src' => '[MOD]/resources/simpla_vqmod_loader.php', 'dest'  => SIMPLA_ADMIN_DIR . '/vqmod_loader.php'),
+			array('src' => '[MOD]/resources/MatthiasMullie', 'dest'  => 'resize/MatthiasMullie', 'remove_method'=>'delete_dir'),
+			array('src' => '[MOD]/resources/minify.php', 'dest' => 'resize/minify.php', 'remove_method'=>'delete_file'),
+			array('src' => '[MOD]/resources/vqmod_loader.php', 'dest'  => 'vqmod_loader.php', 'remove_method'=>'delete_file'),
+			array('src' => '[MOD]/resources/simpla_vqmod_loader.php', 'dest'  => SIMPLA_ADMIN_DIR . '/vqmod_loader.php', 'remove_method'=>'delete_file'),
 		);
 	}
 
@@ -47,12 +50,12 @@ class vqmod_control extends vqInstaller {
 	
 	
 	
-	public function install(){
-		
+	public function install()
+	{
 		$this->form->addElement(new Element_HTML('<h1>Установка vQmod '.$this->mod->version.'</h1>'));
 		
-		if(!$this->is_confirmed()){
-			
+		if(!$this->is_confirmed())
+		{
 			$this->form->addElement(new Element_HTML('<p>Вы подтверждаете начало установки?</p><hr>'));
 			
 			$this->form->addElement(new Element_Hidden('confirmed', 'yes'));
@@ -63,21 +66,20 @@ class vqmod_control extends vqInstaller {
 				'onclick' => "window.location='/'"
 			)));
 
-		}else{
-	
+		}
+		else
+		{
 			$patches = array(			
 				/* .htaccess CHANGE */
 				'.htaccess' => array(
 					'~RewriteEngine on[\s$]+((?!'.preg_quote(VQMOD_OPEN).')(#|Rewrite|<))~mi' =>
 							"RewriteEngine on\n\n".
 							VQMOD_OPEN . "\n".
-							
 							//File is exist or skip 3 RewriteRule
 							"RewriteCond %{REQUEST_FILENAME} !-f\n".
 							"RewriteRule . - [S=3]\n".
-							
 							//Cath css and js
-							"RewriteRule ^(js|design)/(.*)\.(js|css)$ {$this->resources[0]['dest']} [L]\n".
+							"RewriteRule ^(js|design)/(.*)\.(js|css)$ {$this->resources[1]['dest']} [L]\n".
 							//Cath view modules
 							"RewriteRule ^(index|yandex|sitemap|ajax/([\w-\.]+)|payment/\w+/callback|resize/resize)\.php$ {$this->resources[2]['dest']}?VQLOAD=\\$0 [QSA,L]\n".
 							//Cath admin protected modules
@@ -89,13 +91,28 @@ class vqmod_control extends vqInstaller {
 					'~(\[smarty\](?!;'.preg_quote(VQMOD_OPEN).'))([\s$]+)smarty_~m' =>
 							"[smarty]\n".
 							";" . VQMOD_OPEN . "\n".
-							"minify_js				= true			; сжимать javascript (true=да, false=нет)\n".
-							"minify_css			= true			; сжимать css (true=да, false=нет)\n".
-							"static_gzip_level	= 9				; уровень сжатия (gzip) от 0 до 9\n".
-							"static_expire_time	= 172800		; время хранения в сек. (172800=2дня)\n".
+							"minify_js				= true				; сжимать javascript (true=да, false=нет)\n".
+							"minify_css			= true				; сжимать css (true=да, false=нет)\n".
+							"minify_gzip_level	= 0					; уровень сжатия (gzip) от 0 до 9\n".
+							"minify_cache_dir	= cache/minify/	; папка для кеширования\n".
 							";" . VQMOD_CLOSE . "\nsmarty_"
 				)
+				
 			);
+			
+			if(strpos(file_get_contents(ROOT_DIR . SIMPLA_DESIGN_DIR . '/.htaccess'), VQMOD_OPEN) === false) 
+			{
+				$patches[SIMPLA_DESIGN_DIR . '/.htaccess'] = array(
+					'~$~s' =>
+							"\n" . VQMOD_OPEN . "\n".
+							"<Files template.conf>\n".
+							"	order deny,allow \n".
+							"	deny from all\n".
+							"</Files>\n".
+							VQMOD_CLOSE
+				);
+			}
+
 			
 			$result_log = '';
 			
@@ -104,9 +121,9 @@ class vqmod_control extends vqInstaller {
 				$result_log .= "<div>{$patch_file} was write {$result->changes} changes</div>";
 			}
 			
-			foreach($this->resources as $copy){
-				
-				if($this->installer->copy_file($copy['src'], $copy['dest'], true))
+			foreach($this->resources as $copy)
+			{	
+				if($this->installer->resource_copy($copy['src'], $copy['dest'], true))
 					$result_log .= "<div>{$copy['dest']} was installed</div>";
 				else
 					$result_log .= "<div class=\"text-danger\">{$copy['dest']} can't installed</div>";
@@ -124,9 +141,10 @@ class vqmod_control extends vqInstaller {
 			$result_log = "<div class=\"text-left\">{$result_log}</div><br>";
 			
 			$result_counts = $this->installer->get_counter();
+
 			if(!$result_counts->changes) $result_log .= "<div class=\"alert alert-success\">VQMOD ALREADY INSTALLED!</div>";
 			elseif($result_counts->writes != count($patches)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE WRITTEN</div>";
-			elseif($result_counts->copied != count($this->resources)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE COPIED</div>";
+			//elseif($result_counts->copied != 22) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE COPIED</div>";
 			else{
 				$result_log .= "<div class=\"alert alert-success\">VQMOD HAS BEEN INSTALLED ON YOUR SYSTEM!</div>";
 				$this->mod->status = 'installed';
@@ -145,13 +163,12 @@ class vqmod_control extends vqInstaller {
 	
 	
 
-	public function uninstall(){
-		
-
+	public function uninstall()
+	{
 		$this->form->addElement(new Element_HTML('<h1>Удаление vQmod '.$this->mod->version.'</h1>'));
 		
-		if(!$this->is_confirmed()){
-			
+		if(!$this->is_confirmed())
+		{
 			$this->form->addElement(new Element_HTML('<p>Компоненты vqmod могут быть все еще активны.</p>
 			<p>После удаления они не смогут нормально функционировать</p>
 			<p>Вы подтверждаете удаление?</p><hr>'));
@@ -164,9 +181,9 @@ class vqmod_control extends vqInstaller {
 				'onclick' => "window.location='/'"
 			)));
 
-		}else{
-			
-
+		}
+		else
+		{
 			
 			$patches = array(
 				/* .htaccess CHANGE */
@@ -177,21 +194,27 @@ class vqmod_control extends vqInstaller {
 				/* config/config.php CHANGE */
 				'config/config.php' => array(
 					'~\s+;'.preg_quote(VQMOD_OPEN).'(.+?);'.preg_quote(VQMOD_CLOSE).'~s' => ''
+				),
+				
+				/* design/.htaccess CHANGE */
+				SIMPLA_DESIGN_DIR . '/.htaccess' => array(
+					'~'.preg_quote(VQMOD_OPEN).'(.+?)'.preg_quote(VQMOD_CLOSE).'~s' => ''
 				)
 			);
 
 
-			
 			$result_log = '';
 			
-			foreach($patches as $patch_file=>$patch){
+			foreach($patches as $patch_file=>$patch)
+			{
 				$result = $this->installer->apply_patch($patch_file, $patch);
 				$result_log .= "<div>{$patch_file} was write {$result->changes} changes</div>";
 			}
 			
 			
-			foreach($this->resources as $delete){
-				if($this->installer->delete_file($delete['dest']))
+			foreach($this->resources as $delete)
+			{
+				if(call_user_func(array($this->installer, $delete['remove_method']), $delete['dest']))
 					$result_log .= "<div>{$delete['dest']} was deleted</div>";
 				else
 					$result_log .= "<div class=\"text-danger\">{$delete['dest']} can't delete</div>";
@@ -204,7 +227,7 @@ class vqmod_control extends vqInstaller {
 			// output result to user
 			if(!$result_counts->changes) $result_log .= "<div class=\"alert alert-success\">VQMOD ALREADY UNINSTALLED!</div>";
 			elseif($result_counts->writes != count($patches)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE WRITTEN</div>";
-			elseif($result_counts->deleted_file != count($this->resources)) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE DELETED</div>";
+			//elseif($result_counts->deleted_file != 22) $result_log .= "<div class=\"alert alert-danger\">ONE OR MORE FILES COULD NOT BE DELETED</div>";
 			else{
 				$result_log .= "<div class=\"alert alert-success\">VQMOD HAS BEEN UNINSTALLED ON YOUR SYSTEM!</div>";
 				$this->mod->status = 'uninstalled';
@@ -224,11 +247,9 @@ class vqmod_control extends vqInstaller {
 	
 	
 	
-	public function mods(){
-		
-	
+	public function mods()
+	{
 		$mods = glob(MODS_DIR. '*', GLOB_ONLYDIR);
-		
 
 		foreach($mods as &$_mod)
 			$_mod =  $this->mods->get(basename($_mod));
@@ -243,12 +264,12 @@ class vqmod_control extends vqInstaller {
 	
 	
 	
-	public function manager(){
-		
- 		if($xml_turn = trim($this->request->get('turn'))){
-			
-			if(is_file(VQMOD_DIR. "xml/{$xml_turn}.xml")){
-				
+	public function manager()
+	{
+ 		if($xml_turn = trim($this->request->get('turn')))
+		{
+			if(is_file(VQMOD_DIR. "xml/{$xml_turn}.xml"))
+			{
 				$is_off = (substr($xml_turn, 0, 1)=='_');
 				
 				if($is_off)
@@ -259,12 +280,13 @@ class vqmod_control extends vqInstaller {
 				if(rename(VQMOD_DIR. "xml/{$xml_turn}.xml", VQMOD_DIR. "xml/{$new_xml}.xml"))
 					$this->design->assign('turn_xml', $this->get_vqxml_data(VQMOD_DIR. "xml/{$new_xml}.xml"));
 					
-			}else{
+			}
+			else
+			{
 				header('Location: '.$this->request->url(array('turn'=>null)));
 				exit;
 			}
 		}
-
 
 		$xmls = glob(VQMOD_DIR. 'xml/*.xml');
 		
@@ -283,8 +305,8 @@ class vqmod_control extends vqInstaller {
 	
 	
 	
-	private function get_vqxml_data($xml_path){
-		
+	private function get_vqxml_data($xml_path)
+	{
 		$data = array(
 			'id' => basename($xml_path, '.xml'),
 			'version' => '',
@@ -298,7 +320,8 @@ class vqmod_control extends vqInstaller {
 		$modification = $dom->getElementsByTagName('modification')->item(0);
 		
 
-		foreach($data as $tag=>$value){
+		foreach($data as $tag=>$value)
+		{
 			$node = $modification->getElementsByTagName($tag)->item(0);
 			if($node && ($nodeValue = trim((string) $node->nodeValue)))
 				$data[$tag] = $nodeValue;
@@ -312,7 +335,8 @@ class vqmod_control extends vqInstaller {
 		
 
 		
-	private function is_confirmed(){
+	private function is_confirmed()
+	{
 		return $this->request->post('confirmed', 'boolean');
 	}
 	
