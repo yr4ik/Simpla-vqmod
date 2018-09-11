@@ -67,4 +67,5 @@
 * [Возможность оставлять комментарии к страницам](http://forum.simplacms.ru/topic/12009-237-vqmod-возможность-оставлять-комментарии-к-страни/)
 * [Recapcha 2.0](http://forum.simplacms.ru/topic/10274-2-recaptcha-api-20-капча-от-гугл/?p=95271)
 * [Simple Resize](http://forum.simplacms.ru/topic/12103-237-vqmod-simple-resize/?p=94263)
+* [Smarty minify](https://github.com/yr4ik/Simpla-Smarty-Minify)
 
